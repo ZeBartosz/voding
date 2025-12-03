@@ -1,16 +1,15 @@
 import { useCallback, useRef } from "react";
-import type { ReactPlayerProps } from "react-player/types";
 
 export const useVideoMetaData = () => {
   const currentTimeRef = useRef(0);
 
   const handleProgress = useCallback(
-    (state: NonNullable<ReactPlayerProps["onProgress"]>) => {
-      currentTimeRef.current = state.timeStamp;
+    (e: React.SyntheticEvent<HTMLMediaElement>) => {
+      const el = e.currentTarget as HTMLMediaElement;
+      currentTimeRef.current = el.currentTime;
     },
     [],
   );
-
   return {
     currentTimeRef,
     handleProgress,

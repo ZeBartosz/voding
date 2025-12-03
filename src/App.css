@@ -1,21 +1,29 @@
+html,
+body,
 #root {
-    padding: 2rem;
-    text-align: center;
+    height: 100%;
+    margin: 0;
 }
 
 .container {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: 1fr min(420px, 33%);
     gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 1rem;
+    min-height: 85vh;
 }
 
 .input-container {
-    height: 100%;
     display: grid;
-    grid-template-rows: 8fr 2fr;
+    grid-template-rows: 1fr auto;
     gap: 0.5rem;
-    border: red solid;
+    border: 1px solid red;
+    min-width: 0;
 }
+
 .missing-video {
     width: 1080px;
     height: 720px;

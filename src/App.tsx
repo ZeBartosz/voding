@@ -4,6 +4,9 @@ import { useYoutubeValidation } from "./hooks/useYoutubeValidation";
 import { useRef, useState, type MutableRefObject } from "react";
 import { useVideoMetaData } from "./hooks/useVideoMetaData";
 
+const WIDTH = window.innerWidth;
+const HEIGHT = window.innerHeight;
+
 function App() {
   const metaData = useVideoMetaData();
 
@@ -17,9 +20,13 @@ function App() {
   );
 }
 
-const VideoPlayer = ({ handleProgress }) => {
+const VideoPlayer = ({
+  handleProgress,
+}: {
+  handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
+}) => {
   const youtubeValidation = useYoutubeValidation();
-  const playerRef = useRef(null);
+  const playerRef = useRef<HTMLVideoElement | null>(null);
 
   if (youtubeValidation.url === null) {
     return (
@@ -43,11 +50,11 @@ const VideoPlayer = ({ handleProgress }) => {
   return (
     <ReactPlayer
       ref={playerRef}
-      onProgress={handleProgress}
-      width={1080}
-      height={720}
-      controls
       src={youtubeValidation.url}
+      controls
+      width={WIDTH / 1.4}
+      height={HEIGHT / 1.05}
+      onTimeUpdate={handleProgress}
     />
   );
 };
