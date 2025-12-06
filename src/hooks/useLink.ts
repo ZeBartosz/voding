@@ -5,7 +5,7 @@ export const useLink = () => {
   const [inputValue, setInputValue] = useState<string>("");
   const [error, setError] = useState<string>("");
 
-  const playerRef = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<HTMLVideoElement | null>(null);
   const [focus, setFocus] = useState({ x: 0.5, y: 0.5 });
   const [scale, setScale] = useState(1);
 
@@ -84,6 +84,20 @@ export const useLink = () => {
     setFocus({ x: 0.02, y: 0.05 });
   }, []);
 
+  const handleNoteJump = useCallback((time: number) => {
+    const el = playerRef.current;
+    if (!el) return;
+
+    try {
+      el.currentTime = time;
+      if (typeof el.play === "function") {
+        void el.play();
+      }
+    } catch {
+      // Ignore errors
+    }
+  }, []);
+
   return {
     url,
     setUrl,
@@ -96,5 +110,6 @@ export const useLink = () => {
     focus,
     scale,
     handleMapView,
+    handleNoteJump,
   };
 };

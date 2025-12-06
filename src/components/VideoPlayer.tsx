@@ -61,13 +61,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
             height: "100%",
           }}
           onTimeUpdate={handleProgress}
-          config={{
-            youtube: {
-              playerVars: {
-                origin: window.location.origin,
-              },
-            },
-          }}
         />
         <MediaControlBar>
           <MediaPlayButton></MediaPlayButton>

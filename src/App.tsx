@@ -15,6 +15,7 @@ function App() {
     handleSetInputValue,
     handleMapView,
     handleResetFocusAndScale,
+    handleNoteJump,
   } = useLink();
 
   return (
@@ -60,6 +61,7 @@ function App() {
             <div className="input-container">
               <ResultBox
                 currentTime={currentTimeRef}
+                handleNoteJump={handleNoteJump}
                 handleMapView={handleMapView}
                 handleResetFocusAndScale={handleResetFocusAndScale}
               />

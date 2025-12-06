@@ -28,10 +28,12 @@ const ResultBox = ({
   currentTime,
   handleMapView,
   handleResetFocusAndScale,
+  handleNoteJump,
 }: {
   currentTime: RefObject<number>;
   handleMapView: (e: SyntheticEvent) => void;
   handleResetFocusAndScale: (e: SyntheticEvent) => void;
+  handleNoteJump: (time: number) => void;
 }) => {
   const {
     notes,
@@ -106,8 +108,7 @@ const ResultBox = ({
                   <div className="result-actions-row">
                     <button
                       onClick={() => {
-                        /* jump to note time handled by hook via event in useNotes if provided */
-                        // no-op here
+                        handleNoteJump(n.timestamp);
                       }}
                       aria-label="Jump to note"
                       className="btn btn-ghost"
