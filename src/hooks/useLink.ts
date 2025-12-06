@@ -80,8 +80,8 @@ export const useLink = () => {
 
   const handleMapView = useCallback((e: React.SyntheticEvent) => {
     e.stopPropagation();
-    setScale(3);
-    setFocus({ x: 0.02, y: 0.2 });
+    setScale(2.7);
+    setFocus({ x: 0.02, y: 0.05 });
   }, []);
 
   return {

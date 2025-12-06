@@ -171,20 +171,22 @@ const InputBox = ({
         onKeyDown={handleKeyDown}
       />
       <div className="button-box">
-        <button
-          onClick={handleResetFocusAndScale}
-          aria-label="Reset zoom"
-          className="btn btn-ghost"
-        >
-          Reset
-        </button>
-        <button
-          onClick={handleMapView}
-          aria-label="Map View"
-          className="btn btn-ghost"
-        >
-          Map View
-        </button>
+        <div>
+          <button
+            onClick={handleResetFocusAndScale}
+            aria-label="Reset zoom"
+            className="btn btn-ghost"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleMapView}
+            aria-label="Map View"
+            className="btn btn-ghost"
+          >
+            Map View
+          </button>
+        </div>
         <button onClick={addNote} className="btn btn-primary">
           + Add Note
         </button>
