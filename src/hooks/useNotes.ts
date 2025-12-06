@@ -32,8 +32,8 @@ export const useNotes = (currentTimeRef?: RefObject<number>) => {
     setInputValue("");
   }, [inputValue, currentTimeRef]);
 
-  const deleteNote = useCallback((id: number) => {
-    setNotes((prev) => prev.filter((note) => note.id !== id));
+  const deleteNote = useCallback((index: number) => {
+    setNotes((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleKeyDown = useCallback(
