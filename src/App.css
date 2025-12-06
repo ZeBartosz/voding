@@ -35,8 +35,6 @@ body,
     box-sizing: border-box;
     margin: 0.5rem 0.5rem 0 0.5rem;
     border: 1px solid blue;
-}
-.result-box {
     min-height: 0;
     white-space: pre-wrap;
 }
@@ -57,7 +55,7 @@ body,
     padding: 0 0 0 0.5rem;
 }
 
-textarea {
+.input-box textarea {
     width: 65%;
     height: 90%;
     resize: none;

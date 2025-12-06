@@ -1,9 +1,6 @@
 import type { FC } from "react";
 import ReactPlayer from "react-player";
 
-const WIDTH = window.innerWidth;
-const HEIGHT = window.innerHeight;
-
 interface VideoPlayerProps {
   handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
   playerRef: React.Ref<HTMLVideoElement>;
@@ -37,8 +34,8 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     <div
       style={{
         overflow: "hidden",
-        width: WIDTH / 1.4,
-        height: HEIGHT / 1.05,
+        width: "70vw",
+        height: "95vh",
         position: "relative",
         background: "#000",
       }}
@@ -62,26 +59,31 @@ interface MissingProps {
   error: string;
 }
 
-const MissingURL: FC<MissingProps> = ({ ...link }: MissingProps) => {
+const MissingURL: FC<MissingProps> = ({
+  handleSubmit,
+  inputValue,
+  handleSetInputValue,
+  error,
+}) => {
   return (
     <div
       className="missing-video"
       style={{
-        width: WIDTH / 1.4,
-        height: HEIGHT / 1.05,
+        width: "70vw",
+        height: "95vh",
       }}
     >
-      <form onSubmit={link.handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="url-input">Paste VOD link</label>
         <input
           id="url-input"
           type="text"
-          value={link.inputValue}
-          onChange={(e) => link.handleSetInputValue(e.target.value)}
+          value={inputValue}
+          onChange={(e) => handleSetInputValue(e.target.value)}
           placeholder="https://youtu.be/FOatagUO-Z0?si=B7VpCVugvcLB_Jzz"
         />
         <button type="submit">Submit</button>
-        {link.error && <p> {link.error}</p>}
+        {error && <p> {error}</p>}
       </form>
     </div>
   );
