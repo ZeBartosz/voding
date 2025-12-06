@@ -99,7 +99,7 @@ const ResultBox = ({
               <div className="empty-sub">Add your first note below</div>
             </div>
           ) : (
-            filtered.map((n, i) => (
+            filtered.map((n) => (
               <div key={n.id} className="result-card">
                 <div className="result-card-header">
                   <div className="result-meta">
@@ -116,7 +116,12 @@ const ResultBox = ({
                       Jump
                     </button>
                     <button
-                      onClick={() => deleteNote(i)}
+                      onClick={() => {
+                        const index = notes.findIndex(
+                          (note) => note.id === n.id,
+                        );
+                        if (index !== -1) deleteNote(index);
+                      }}
                       aria-label="Delete note"
                       className="btn"
                     >
