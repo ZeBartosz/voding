@@ -1,70 +1,77 @@
 import type { FC } from "react";
-import { useLink } from "../hooks/useLink";
 import ReactPlayer from "react-player";
+import "media-chrome";
+import {
+  MediaController,
+  MediaControlBar,
+  MediaTimeRange,
+  MediaTimeDisplay,
+  MediaVolumeRange,
+  MediaPlayButton,
+  MediaSeekBackwardButton,
+  MediaSeekForwardButton,
+  MediaMuteButton,
+} from "media-chrome/react";
 
-const WIDTH = window.innerWidth;
-const HEIGHT = window.innerHeight;
-
-const VideoPlayer = ({
-  handleProgress,
-}: {
+interface VideoPlayerProps {
   handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
-}) => {
-  const {
-    playerRef,
-    url,
-    handleSubmit,
-    inputValue,
-    error,
-    handleSetInputValue,
-    handleMapView,
-    handleResetFocusAndScale,
-  } = useLink();
+  playerRef: React.Ref<HTMLVideoElement>;
+  url: string | null;
+  handleSubmit: (e: React.FormEvent) => void;
+  inputValue: string;
+  error: string | null;
+  handleSetInputValue: (v: string) => void;
+}
 
+const VideoPlayer: FC<VideoPlayerProps> = ({
+  handleProgress,
+  playerRef,
+  url,
+  handleSubmit,
+  inputValue,
+  error,
+  handleSetInputValue,
+}) => {
   if (url === null)
     return (
       <MissingURL
-        {...{ handleSubmit, inputValue, error, handleSetInputValue }}
+        handleSubmit={handleSubmit}
+        inputValue={inputValue}
+        error={error || ""}
+        handleSetInputValue={handleSetInputValue}
       />
     );
 
   return (
-    <div
-      style={{
-        overflow: "hidden",
-        width: WIDTH / 1.4,
-        height: HEIGHT / 1.05,
-        position: "relative",
-        background: "#000",
-      }}
-    >
-      <ReactPlayer
-        ref={playerRef}
-        src={url}
-        controls
-        width="100%"
-        height="100%"
-        onTimeUpdate={handleProgress}
-      />
-
-      <div
+    <div className="video-player-wrap">
+      <MediaController
         style={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          zIndex: 9999,
-          display: "flex",
-          gap: 8,
+          width: "100%",
+          height: "100%",
+          aspectRatio: "16/9",
         }}
       >
-        <button onClick={handleResetFocusAndScale} aria-label="Reset zoom">
-          Reset
-        </button>
-
-        <button onClick={handleMapView} aria-label="Map View">
-          Map View
-        </button>
-      </div>
+        <ReactPlayer
+          ref={playerRef}
+          src={url}
+          slot="media"
+          controls={false}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          onTimeUpdate={handleProgress}
+        />
+        <MediaControlBar>
+          <MediaPlayButton></MediaPlayButton>
+          <MediaSeekBackwardButton></MediaSeekBackwardButton>
+          <MediaSeekForwardButton></MediaSeekForwardButton>
+          <MediaTimeRange></MediaTimeRange>
+          <MediaTimeDisplay showDuration></MediaTimeDisplay>
+          <MediaMuteButton></MediaMuteButton>
+          <MediaVolumeRange></MediaVolumeRange>
+        </MediaControlBar>
+      </MediaController>
     </div>
   );
 };
@@ -76,26 +83,28 @@ interface MissingProps {
   error: string;
 }
 
-const MissingURL: FC<MissingProps> = ({ ...link }: MissingProps) => {
+const MissingURL: FC<MissingProps> = ({
+  handleSubmit,
+  inputValue,
+  handleSetInputValue,
+  error,
+}) => {
   return (
-    <div
-      className="missing-video"
-      style={{
-        width: WIDTH / 1.4,
-        height: HEIGHT / 1.05,
-      }}
-    >
-      <form onSubmit={link.handleSubmit}>
+    <div className="missing-video">
+      <form onSubmit={handleSubmit}>
         <label htmlFor="url-input">Paste VOD link</label>
-        <input
-          id="url-input"
-          type="text"
-          value={link.inputValue}
-          onChange={(e) => link.handleSetInputValue(e.target.value)}
-          placeholder="https://youtu.be/FOatagUO-Z0?si=B7VpCVugvcLB_Jzz"
-        />
-        <button type="submit">Submit</button>
-        {link.error ?? <p> {link.error}</p>}
+        <div>
+          <input
+            id="url-input"
+            type="text"
+            value={inputValue}
+            onChange={(e) => handleSetInputValue(e.target.value)}
+            placeholder="https://youtu.be/FOatagUO-Z0?si=B7VpCVugvcLB_Jzz"
+          />
+          <button type="submit">Submit</button>
+        </div>
+
+        {error && <p className="form-error">{error}</p>}
       </form>
     </div>
   );
