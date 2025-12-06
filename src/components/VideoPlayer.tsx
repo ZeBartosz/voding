@@ -1,5 +1,17 @@
 import type { FC } from "react";
 import ReactPlayer from "react-player";
+import "media-chrome";
+import {
+  MediaController,
+  MediaControlBar,
+  MediaTimeRange,
+  MediaTimeDisplay,
+  MediaVolumeRange,
+  MediaPlayButton,
+  MediaSeekBackwardButton,
+  MediaSeekForwardButton,
+  MediaMuteButton,
+} from "media-chrome/react";
 
 interface VideoPlayerProps {
   handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
@@ -32,14 +44,34 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 
   return (
     <div className="video-player-wrap">
-      <ReactPlayer
-        ref={playerRef}
-        src={url}
-        controls
-        width="100%"
-        height="100%"
-        onTimeUpdate={handleProgress}
-      />
+      <MediaController
+        style={{
+          width: "100%",
+          height: "100%",
+          aspectRatio: "16/9",
+        }}
+      >
+        <ReactPlayer
+          ref={playerRef}
+          src={url}
+          slot="media"
+          controls={false}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          onTimeUpdate={handleProgress}
+        />
+        <MediaControlBar>
+          <MediaPlayButton></MediaPlayButton>
+          <MediaSeekBackwardButton></MediaSeekBackwardButton>
+          <MediaSeekForwardButton></MediaSeekForwardButton>
+          <MediaTimeRange></MediaTimeRange>
+          <MediaTimeDisplay showDuration></MediaTimeDisplay>
+          <MediaMuteButton></MediaMuteButton>
+          <MediaVolumeRange></MediaVolumeRange>
+        </MediaControlBar>
+      </MediaController>
     </div>
   );
 };
