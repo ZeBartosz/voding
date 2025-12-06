@@ -1,4 +1,4 @@
-import { useState, type MutableRefObject } from "react";
+import { useState, useRef, useEffect, type MutableRefObject } from "react";
 
 interface Note {
   id: number;
@@ -29,14 +29,22 @@ const ResultBox = ({
   handleResetFocusAndScale: (e: React.SyntheticEvent) => void;
 }) => {
   const [notes, setNotes] = useState<Note[]>([]);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = resultsRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
+  }, [notes.length]);
 
   return (
     <>
-      <div className="result-box">
+      <div className="result-box" ref={resultsRef}>
         {notes.map((n) => (
           <div key={n.id} className="result-card">
-            <p>{n.content}</p>
             <p>{formatTime(n.timestamp)}</p>
+            <p>{n.content}</p>
           </div>
         ))}
       </div>
@@ -62,6 +70,7 @@ const InputBox = ({
   handleResetFocusAndScale: (e: React.SyntheticEvent) => void;
 }) => {
   const [inputValue, setInputValue] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const addNote = () => {
     if (!inputValue.trim()) return;
@@ -78,23 +87,51 @@ const InputBox = ({
     setInputValue("");
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter") {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const el = textareaRef.current;
+        if (!el) {
+          setInputValue((prev) => prev + "\n");
+          return;
+        }
+        const start = el.selectionStart ?? inputValue.length;
+        const end = el.selectionEnd ?? inputValue.length;
+        const newValue =
+          inputValue.slice(0, start) + "\n" + inputValue.slice(end);
+        setInputValue(newValue);
+        requestAnimationFrame(() => {
+          const pos = start + 1;
+          el.selectionStart = el.selectionEnd = pos;
+        });
+        return;
+      }
+
+      e.preventDefault();
+      addNote();
+    }
+  };
+
   return (
     <div className="input-box">
-      <input
-        type="text"
+      <textarea
+        ref={textareaRef}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder="Take a note..."
-        onKeyUp={(e) => e.key === "Enter" && addNote()}
+        onKeyDown={handleKeyDown}
       />
-      <button onClick={addNote}>Add Note</button>
-      <button onClick={handleResetFocusAndScale} aria-label="Reset zoom">
-        Reset
-      </button>
+      <div className="button-box">
+        <button onClick={addNote}>Add Note</button>
+        <button onClick={handleResetFocusAndScale} aria-label="Reset zoom">
+          Reset
+        </button>
 
-      <button onClick={handleMapView} aria-label="Map View">
-        Map View
-      </button>
+        <button onClick={handleMapView} aria-label="Map View">
+          Map View
+        </button>
+      </div>
     </div>
   );
 };

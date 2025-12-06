@@ -6,7 +6,7 @@ const HEIGHT = window.innerHeight;
 
 interface VideoPlayerProps {
   handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
-  playerRef: React.Ref<HTMLMediaElement>;
+  playerRef: React.Ref<HTMLVideoElement>;
   url: string | null;
   handleSubmit: (e: React.FormEvent) => void;
   inputValue: string;
@@ -81,7 +81,7 @@ const MissingURL: FC<MissingProps> = ({ ...link }: MissingProps) => {
           placeholder="https://youtu.be/FOatagUO-Z0?si=B7VpCVugvcLB_Jzz"
         />
         <button type="submit">Submit</button>
-        {link.error ?? <p> {link.error}</p>}
+        {link.error && <p> {link.error}</p>}
       </form>
     </div>
   );
