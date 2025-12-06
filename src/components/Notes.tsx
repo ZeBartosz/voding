@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect, type MutableRefObject } from "react";
-
-interface Note {
-  id: number;
-  content: string;
-  timestamp: number;
-}
+import {
+  type Dispatch,
+  type SetStateAction,
+  type RefObject,
+  type KeyboardEvent,
+  type SyntheticEvent,
+} from "react";
+import { useNotes } from "../hooks/useNotes";
 
 const formatTime = (seconds: number): string => {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -14,7 +15,9 @@ const formatTime = (seconds: number): string => {
   const secs = Math.floor(seconds % 60);
 
   if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   }
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 };
@@ -24,33 +27,45 @@ const ResultBox = ({
   handleMapView,
   handleResetFocusAndScale,
 }: {
-  currentTime: MutableRefObject<number>;
-  handleMapView: (e: React.SyntheticEvent) => void;
-  handleResetFocusAndScale: (e: React.SyntheticEvent) => void;
+  currentTime: RefObject<number>;
+  handleMapView: (e: SyntheticEvent) => void;
+  handleResetFocusAndScale: (e: SyntheticEvent) => void;
 }) => {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const resultsRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = resultsRef.current;
-    if (el) {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    }
-  }, [notes.length]);
+  const {
+    notes,
+    inputValue,
+    setInputValue,
+    addNote,
+    deleteNote,
+    textareaRef,
+    resultsRef,
+    handleKeyDown,
+  } = useNotes(currentTime);
 
   return (
     <>
       <div className="result-box" ref={resultsRef}>
-        {notes.map((n) => (
+        {notes.map((n, i) => (
           <div key={n.id} className="result-card">
-            <p>{formatTime(n.timestamp)} - </p>
-            <p>{n.content}</p>
+            <div className="result-meta">
+              <span className="timestamp">{formatTime(n.timestamp)}</span>
+            </div>
+            <div className="result-content">{n.content}</div>
+            <div className="result-actions">
+              <button onClick={() => deleteNote(i)} aria-label="Delete note">
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
       <InputBox
-        setNotes={setNotes}
-        currentTime={currentTime}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        addNote={addNote}
+        textareaRef={textareaRef}
+        handleKeyDown={handleKeyDown}
         handleMapView={handleMapView}
         handleResetFocusAndScale={handleResetFocusAndScale}
       />
@@ -59,60 +74,22 @@ const ResultBox = ({
 };
 
 const InputBox = ({
-  setNotes,
-  currentTime,
+  inputValue,
+  setInputValue,
+  addNote,
+  textareaRef,
+  handleKeyDown,
   handleMapView,
   handleResetFocusAndScale,
 }: {
-  setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
-  currentTime: MutableRefObject<number>;
-  handleMapView: (e: React.SyntheticEvent) => void;
-  handleResetFocusAndScale: (e: React.SyntheticEvent) => void;
+  inputValue: string;
+  setInputValue: Dispatch<SetStateAction<string>>;
+  addNote: () => void;
+  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  handleKeyDown: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
+  handleMapView: (e: SyntheticEvent) => void;
+  handleResetFocusAndScale: (e: SyntheticEvent) => void;
 }) => {
-  const [inputValue, setInputValue] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const addNote = () => {
-    if (!inputValue.trim()) return;
-
-    setNotes((prev: Note[]) => [
-      ...prev,
-      {
-        id: Date.now(),
-        content: inputValue,
-        timestamp: currentTime.current,
-      },
-    ]);
-
-    setInputValue("");
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter") {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        const el = textareaRef.current;
-        if (!el) {
-          setInputValue((prev) => prev + "\n");
-          return;
-        }
-        const start = el.selectionStart ?? inputValue.length;
-        const end = el.selectionEnd ?? inputValue.length;
-        const newValue =
-          inputValue.slice(0, start) + "\n" + inputValue.slice(end);
-        setInputValue(newValue);
-        requestAnimationFrame(() => {
-          const pos = start + 1;
-          el.selectionStart = el.selectionEnd = pos;
-        });
-        return;
-      }
-
-      e.preventDefault();
-      addNote();
-    }
-  };
-
   return (
     <div className="input-box">
       <textarea
@@ -127,7 +104,6 @@ const InputBox = ({
         <button onClick={handleResetFocusAndScale} aria-label="Reset zoom">
           Reset
         </button>
-
         <button onClick={handleMapView} aria-label="Map View">
           Map View
         </button>
