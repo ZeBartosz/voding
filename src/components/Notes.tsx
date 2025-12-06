@@ -124,12 +124,7 @@ const ResultBox = ({
                       Jump
                     </button>
                     <button
-                      onClick={() => {
-                        const index = notes.findIndex(
-                          (note) => note.id === n.id,
-                        );
-                        if (index !== -1) deleteNote(index);
-                      }}
+                      onClick={() => deleteNote(n.id)}
                       aria-label="Delete note"
                       className="btn"
                     >
