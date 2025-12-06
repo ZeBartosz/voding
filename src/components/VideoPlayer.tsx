@@ -1,30 +1,39 @@
 import type { FC } from "react";
-import { useLink } from "../hooks/useLink";
 import ReactPlayer from "react-player";
 
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 
-const VideoPlayer = ({
-  handleProgress,
-}: {
+interface VideoPlayerProps {
   handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
-}) => {
-  const {
-    playerRef,
-    url,
-    handleSubmit,
-    inputValue,
-    error,
-    handleSetInputValue,
-    handleMapView,
-    handleResetFocusAndScale,
-  } = useLink();
+  playerRef: React.Ref<HTMLMediaElement>;
+  url: string | null;
+  handleSubmit: (e: React.FormEvent) => void;
+  inputValue: string;
+  error: string | null;
+  handleSetInputValue: (v: string) => void;
+  handleMapView: (e: React.SyntheticEvent) => void;
+  handleResetFocusAndScale: (e: React.SyntheticEvent) => void;
+}
 
+const VideoPlayer: FC<VideoPlayerProps> = ({
+  handleProgress,
+  playerRef,
+  url,
+  handleSubmit,
+  inputValue,
+  error,
+  handleSetInputValue,
+  handleMapView,
+  handleResetFocusAndScale,
+}) => {
   if (url === null)
     return (
       <MissingURL
-        {...{ handleSubmit, inputValue, error, handleSetInputValue }}
+        handleSubmit={handleSubmit}
+        inputValue={inputValue}
+        error={error || ""}
+        handleSetInputValue={handleSetInputValue}
       />
     );
 
