@@ -53,7 +53,6 @@ function App() {
 
   useEffect(() => {
     if (isRestoringRef.current) {
-      // while restoring we don't want autosave to run; keep snapshot in sync
       prevNotesRef.current = notes;
       return;
     }
@@ -88,10 +87,10 @@ function App() {
               id: uuidv4(),
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
-              video: (video as any) ?? null,
+              video: video!,
               notes,
             };
-        await save(payload as any);
+        await save(payload);
         setLastSavedAt(new Date().toISOString());
       } catch {}
     };
@@ -115,14 +114,13 @@ function App() {
     };
   }, [notes, save, video, vodding]);
 
-  const handleNewSession = () => {
-    loadAll();
-
+  const handleNewSession = async () => {
     setNotes([]);
     setVideo(null);
     handleSetInputValue("");
 
     prevNotesRef.current = [];
+    await loadAll();
   };
 
   return (

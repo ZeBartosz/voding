@@ -55,6 +55,8 @@ export const saveVod = async (
     const updatedStation: VoddingPayload = {
       ...existingStation,
       ...data,
+      id: existingStation.id,
+      createdAt: existingStation.createdAt,
       updatedAt: new Date().toISOString(),
     };
 
@@ -82,9 +84,13 @@ export const saveVod = async (
   }
 };
 
-export const deleteVod = async (vodId: string) => {
+export const deleteVod = async (videoId: string) => {
   const db = await getDB();
-  const existingStation = await db.getFromIndex("vodding", "by-videoId", vodId);
+  const existingStation = await db.getFromIndex(
+    "vodding",
+    "by-videoId",
+    videoId,
+  );
 
   if (existingStation) {
     await db.delete("vodding", existingStation.id);

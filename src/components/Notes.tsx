@@ -48,7 +48,7 @@ const Notes: React.FC<NotesProps> = ({
   );
 
   useEffect(() => {
-    if (!controlled && initialNotes !== undefined && initialNotes !== null) {
+    if (initialNotes !== undefined && initialNotes !== null) {
       setInternalNotes(initialNotes);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,9 +69,7 @@ const Notes: React.FC<NotesProps> = ({
   const notify = useCallback(
     (next: Note[]) => {
       if (controlled) {
-        try {
-          onNotesChange?.(next);
-        } catch {}
+        onNotesChange?.(next);
       } else {
         setInternalNotes(next);
       }

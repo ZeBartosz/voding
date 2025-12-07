@@ -112,34 +112,16 @@ const MissingURL: FC<MissingProps> = ({
   onRestoring,
 }) => {
   const handleRestore = async (v: VoddingPayload) => {
-    try {
-      onRestoring?.(true);
-    } catch {}
-
-    if (v.video?.url) handleSetInputValue(v.video.url);
+    onRestoring?.(true);
 
     try {
-      if (v.id) {
-        try {
-          await loadWithId(v.id);
-        } catch {}
-      }
-
-      if (v.video) {
-        setVideo(v.video);
-      }
+      if (v.video?.url) handleSetInputValue(v.video.url);
+      if (v.id) await loadWithId(v.id);
+      if (v.video) setVideo(v.video);
+    } catch (err) {
+      console.error("Failed to restore VOD:", err);
     } finally {
-      try {
-        window.setTimeout(() => {
-          try {
-            onRestoring?.(false);
-          } catch {}
-        }, 400);
-      } catch {
-        try {
-          onRestoring?.(false);
-        } catch {}
-      }
+      window.setTimeout(() => onRestoring?.(false), 400);
     }
   };
 
@@ -147,7 +129,9 @@ const MissingURL: FC<MissingProps> = ({
     if (!id) return;
     try {
       await deleteVodById(id);
-    } catch {}
+    } catch (err) {
+      console.error("Failed to delete VOD:", err);
+    }
   };
 
   return (
