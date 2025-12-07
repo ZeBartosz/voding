@@ -1,13 +1,22 @@
-import {
-  type Dispatch,
-  type SetStateAction,
-  type RefObject,
-  type KeyboardEvent,
-  type SyntheticEvent,
+import React, {
+  useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
+  type RefObject,
 } from "react";
-import { useNotes } from "../hooks/useNotes";
+import { v4 as uuidv4 } from "uuid";
+import type { Note } from "../types";
+
+interface NotesProps {
+  currentTime: RefObject<number>;
+  handleMapView: (e: React.SyntheticEvent) => void;
+  handleResetFocusAndScale: (e: React.SyntheticEvent) => void;
+  handleNoteJump: (time: number) => void;
+  initialNotes?: Note[] | null;
+  onNotesChange?: (notes: Note[]) => void;
+}
 
 const formatTime = (seconds: number): string => {
   if (!Number.isFinite(seconds) || seconds <= 0) return "0:00";
@@ -24,114 +33,226 @@ const formatTime = (seconds: number): string => {
   return `${minutes.toString()}:${secs.toString().padStart(2, "0")}`;
 };
 
-const ResultBox = ({
+const Notes: React.FC<NotesProps> = ({
   currentTime,
   handleMapView,
   handleResetFocusAndScale,
   handleNoteJump,
-}: {
-  currentTime: RefObject<number>;
-  handleMapView: (e: SyntheticEvent) => void;
-  handleResetFocusAndScale: (e: SyntheticEvent) => void;
-  handleNoteJump: (time: number) => void;
+  initialNotes,
+  onNotesChange,
 }) => {
-  const {
-    notes,
-    inputValue,
-    setInputValue,
-    addNote,
-    deleteNote,
-    textareaRef,
-    resultsRef,
-    handleKeyDown,
-  } = useNotes(currentTime);
+  const controlled = typeof onNotesChange === "function";
 
-  const [query, setQuery] = useState("");
+  const [internalNotes, setInternalNotes] = useState<Note[]>(
+    initialNotes ?? [],
+  );
+
+  useEffect(() => {
+    if (initialNotes !== undefined && initialNotes !== null) {
+      setInternalNotes(initialNotes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialNotes]);
+
+  const [inputValue, setInputValue] = useState<string>("");
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState<string>("");
+
+  const [query, setQuery] = useState<string>("");
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+
+  const notes: Note[] = controlled ? (initialNotes ?? []) : internalNotes;
+
+  const notify = useCallback(
+    (next: Note[]) => {
+      if (controlled) {
+        onNotesChange?.(next);
+      } else {
+        setInternalNotes(next);
+      }
+    },
+    [controlled, onNotesChange],
+  );
+
+  const addNote = useCallback(() => {
+    const text = inputValue.trim();
+    if (!text) return;
+
+    const timestamp =
+      typeof currentTime?.current === "number" ? currentTime.current : 0;
+
+    const newNote: Note = {
+      id: uuidv4(),
+      content: text,
+      timestamp,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const next = [...(notes || []), newNote];
+    notify(next);
+    setInputValue("");
+    requestAnimationFrame(() => {
+      const el = resultsRef.current;
+      if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    });
+  }, [inputValue, currentTime, notes, notify]);
+
+  const deleteNote = useCallback(
+    (id: string) => {
+      const next = (notes || []).filter((n) => n.id !== id);
+      notify(next);
+    },
+    [notes, notify],
+  );
+
+  const saveEdit = useCallback(
+    (id: string, newContent: string) => {
+      const next = (notes || []).map((n) =>
+        n.id === id
+          ? { ...n, content: newContent, updatedAt: new Date().toISOString() }
+          : n,
+      );
+      notify(next);
+      setEditingId(null);
+      setEditingValue("");
+    },
+    [notes, notify],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key !== "Enter") return;
+
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const el = textareaRef.current;
+        if (!el) {
+          setInputValue((prev) => prev + "\n");
+          return;
+        }
+        const start = el.selectionStart;
+        const end = el.selectionEnd;
+        const newValue =
+          inputValue.slice(0, start) + "\n" + inputValue.slice(end);
+        setInputValue(newValue);
+        requestAnimationFrame(() => {
+          const t = textareaRef.current;
+          if (t) t.selectionStart = t.selectionEnd = start + 1;
+        });
+        return;
+      }
+
+      e.preventDefault();
+      addNote();
+    },
+    [inputValue, addNote],
+  );
 
   const filtered = useMemo(() => {
-    if (!query) return notes;
+    if (!query) return notes ?? [];
     const q = query.toLowerCase().trim();
-    return notes.filter(
+    return (notes ?? []).filter(
       (n) =>
         n.content.toLowerCase().includes(q) ||
         formatTime(n.timestamp).includes(q),
     );
   }, [notes, query]);
 
-  return (
-    <>
-      <div className="result-list-root">
-        <div className="result-list-top">
-          <input
-            aria-label="Search notes"
-            placeholder="Search notes..."
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-            }}
-            className="notes-search"
-          />
-          <div className="notes-pill">
-            {notes.length} {notes.length === 1 ? "note" : "notes"}
-          </div>
-        </div>
+  useEffect(() => {
+    const el = resultsRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [notes?.length]);
 
-        <div className="result-box" ref={resultsRef}>
-          {filtered.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M11 6H13V12H11V6Z"
-                    fill="currentColor"
-                    opacity="0.85"
-                  />
-                  <path
-                    d="M12 17.25C10.481 17.25 9.25 16.019 9.25 14.5C9.25 12.981 10.481 11.75 12 11.75C13.519 11.75 14.75 12.981 14.75 14.5C14.75 16.019 13.519 17.25 12 17.25Z"
-                    fill="currentColor"
-                    opacity="0.6"
-                  />
-                </svg>
-              </div>
-              <div className="empty-title">
-                {query ? "No notes match your search" : "No notes yet"}
-              </div>
-              <div className="empty-sub">
-                {query
-                  ? "Try changing or clearing your search."
-                  : "Add your first note below"}
-              </div>
+  return (
+    <div className="result-list-root">
+      <div className="result-list-top">
+        <input
+          aria-label="Search notes"
+          placeholder="Search notes..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="notes-search"
+        />
+        <div className="notes-pill">
+          {notes?.length ?? 0} {notes && notes.length === 1 ? "note" : "notes"}
+        </div>
+      </div>
+
+      <div className="result-box" ref={resultsRef}>
+        {filtered.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon" aria-hidden>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 6H13V12H11V6Z"
+                  fill="currentColor"
+                  opacity="0.85"
+                />
+                <path
+                  d="M12 17.25C10.481 17.25 9.25 16.019 9.25 14.5C9.25 12.981 10.481 11.75 12 11.75C13.519 11.75 14.75 12.981 14.75 14.5C14.75 16.019 13.519 17.25 12 17.25Z"
+                  fill="currentColor"
+                  opacity="0.6"
+                />
+              </svg>
             </div>
-          ) : (
-            filtered.map((n) => (
-              <div key={n.id} className="result-card">
+            <div className="empty-title">
+              {query ? "No notes match your search" : "No notes yet"}
+            </div>
+            <div className="empty-sub">
+              {query
+                ? "Try changing or clearing your search."
+                : "Add your first note below"}
+            </div>
+          </div>
+        ) : (
+          filtered.map((n) => {
+            const isEditing = editingId === n.id;
+            return (
+              <div
+                key={n.id}
+                className={`result-card ${isEditing ? "editing" : ""}`}
+              >
                 <div className="result-card-header">
                   <div className="result-meta">
                     <span className="timestamp">{formatTime(n.timestamp)}</span>
                   </div>
+
                   <div className="result-actions-row">
                     <button
-                      onClick={() => {
-                        handleNoteJump(n.timestamp);
-                      }}
+                      onClick={() => handleNoteJump(n.timestamp)}
                       aria-label="Jump to note"
                       className="btn btn-ghost"
                     >
                       Jump
                     </button>
+
+                    {!isEditing && (
+                      <button
+                        onClick={() => {
+                          setEditingId(n.id);
+                          setEditingValue(n.content);
+                          // focus is handled by rendering the textarea below
+                        }}
+                        aria-label="Edit note"
+                        className="btn btn-ghost"
+                      >
+                        Edit
+                      </button>
+                    )}
+
                     <button
-                      onClick={() => {
-                        const index = notes.findIndex(
-                          (note) => note.id === n.id,
-                        );
-                        if (index !== -1) deleteNote(index);
-                      }}
+                      onClick={() => deleteNote(n.id)}
                       aria-label="Delete note"
                       className="btn"
                     >
@@ -140,77 +261,81 @@ const ResultBox = ({
                   </div>
                 </div>
 
-                <div className="result-content">{n.content}</div>
+                <div className="result-content">
+                  {isEditing ? (
+                    <div className="note-edit-wrap">
+                      <textarea
+                        autoFocus
+                        className="note-edit-textarea"
+                        value={editingValue}
+                        onChange={(e) => setEditingValue(e.target.value)}
+                      />
+                      <div className="note-edit-actions">
+                        <button
+                          onClick={() => saveEdit(n.id, editingValue)}
+                          className="btn btn-primary"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingId(null);
+                            setEditingValue("");
+                          }}
+                          className="btn btn-ghost"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>{n.content}</div>
+                  )}
+                </div>
               </div>
-            ))
-          )}
-        </div>
-
-        <InputBox
-          inputValue={inputValue}
-          setInputValue={setInputValue}
-          addNote={addNote}
-          textareaRef={textareaRef}
-          handleKeyDown={handleKeyDown}
-          handleMapView={handleMapView}
-          handleResetFocusAndScale={handleResetFocusAndScale}
-        />
+            );
+          })
+        )}
       </div>
-    </>
-  );
-};
 
-const InputBox = ({
-  inputValue,
-  setInputValue,
-  addNote,
-  textareaRef,
-  handleKeyDown,
-  handleMapView,
-  handleResetFocusAndScale,
-}: {
-  inputValue: string;
-  setInputValue: Dispatch<SetStateAction<string>>;
-  addNote: () => void;
-  textareaRef: RefObject<HTMLTextAreaElement | null>;
-  handleKeyDown: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
-  handleMapView: (e: SyntheticEvent) => void;
-  handleResetFocusAndScale: (e: SyntheticEvent) => void;
-}) => {
-  return (
-    <div className="input-box">
-      <textarea
-        ref={textareaRef}
-        value={inputValue}
-        onChange={(e) => {
-          setInputValue(e.target.value);
-        }}
-        placeholder="Write your observation..."
-        onKeyDown={handleKeyDown}
-      />
-      <div className="button-box">
-        <div>
+      <div className="input-box">
+        <textarea
+          ref={textareaRef}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Write your observation..."
+          onKeyDown={handleKeyDown}
+          className="input-textarea"
+        />
+        <div className="button-box">
+          <div>
+            <button
+              onClick={handleResetFocusAndScale}
+              aria-label="Reset zoom"
+              className="btn btn-ghost"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleMapView}
+              aria-label="Map View"
+              className="btn btn-ghost"
+            >
+              Map View
+            </button>
+          </div>
           <button
-            onClick={handleResetFocusAndScale}
-            aria-label="Reset zoom"
-            className="btn btn-ghost"
+            onClick={() => {
+              addNote();
+            }}
+            className="btn btn-primary"
           >
-            Reset
-          </button>
-          <button
-            onClick={handleMapView}
-            aria-label="Map View"
-            className="btn btn-ghost"
-          >
-            Map View
+            + Add Note
           </button>
         </div>
-        <button onClick={addNote} className="btn btn-primary">
-          + Add Note
-        </button>
       </div>
     </div>
   );
 };
 
-export default ResultBox;
+export default Notes;

@@ -1,0 +1,87 @@
+.note-edit-wrap,
+.edit-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.note-edit-textarea,
+.edit-area textarea {
+    width: 100%;
+    min-height: 84px;
+    max-height: 240px;
+    resize: vertical;
+    border-radius: 6px;
+    padding: 10px;
+    background: #071214;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.note-edit-actions,
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+}
+
+.note-edit-actions .btn,
+.edit-actions .btn {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.note-edit-actions .btn-primary,
+.edit-actions .btn-primary {
+    padding: 7px 12px;
+}
+
+.note-edit-actions .btn-ghost,
+.edit-actions .btn-ghost {
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: transparent;
+}
+
+.result-card.editing {
+    border-left: 3px solid rgba(184, 46, 46, 0.08);
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.result-content > div {
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+}
+
+@media (max-width: 900px) {
+    .note-edit-textarea,
+    .edit-area textarea {
+        min-height: 72px;
+    }
+}
+
+.note-edit-textarea:focus,
+.edit-area textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(184, 46, 46, 0.08);
+    border-color: rgba(184, 46, 46, 0.6);
+}
+
+.note-edit-actions .btn-primary:focus,
+.edit-actions .btn-primary:focus {
+    box-shadow: 0 4px 16px rgba(184, 46, 46, 0.12);
+    transform: translateY(-1px);
+}
+
+.result-card .note-edit-wrap {
+    margin-top: 6px;
+}
