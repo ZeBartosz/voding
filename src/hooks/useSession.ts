@@ -79,8 +79,14 @@ export const useSession = () => {
     setError(null);
 
     try {
-      await deleteVod(id);
-      setVoddingList((prev) => prev.filter((v) => v.id !== id));
+      let videoId = id;
+      const maybeVodding = await getVoddingById(id);
+      if (maybeVodding?.video?.id) {
+        videoId = maybeVodding.video.id;
+      }
+
+      await deleteVod(videoId);
+      setVoddingList((prev) => prev.filter((v) => v.video?.id !== videoId));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
