@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import React, { type FC } from "react";
 import ReactPlayer from "react-player";
 import "media-chrome";
 import {
