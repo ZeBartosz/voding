@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 export const useNotes = (
   currentTimeRef?: RefObject<number>,
   initialNotes?: Note[],
-  onNotesChange?: (notes: Note[]) => void,
 ) => {
   const [notes, setNotes] = useState<Note[]>(initialNotes ?? []);
   const [inputValue, setInputValue] = useState<string>("");
@@ -15,12 +14,11 @@ export const useNotes = (
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!initialNotes) return;
+    // Accept empty arrays as valid initial notes.
+    // Only sync when initialNotes is explicitly provided (not undefined/null).
+    if (initialNotes === undefined || initialNotes === null) return;
     setNotes(initialNotes);
-    try {
-      onNotesChange?.(initialNotes);
-    } catch {}
-  }, [initialNotes, onNotesChange]);
+  }, [initialNotes]);
 
   const addNote = useCallback(() => {
     if (!inputValue.trim()) return;
@@ -38,48 +36,25 @@ export const useNotes = (
 
     setNotes((prev: Note[]) => {
       const next = [...prev, newNote];
-      try {
-        onNotesChange?.(next);
-      } catch {}
       return next;
     });
 
     setInputValue("");
-  }, [inputValue, currentTimeRef, onNotesChange]);
+  }, [inputValue, currentTimeRef]);
 
-  const deleteNote = useCallback(
-    (index: number) => {
-      setNotes((prev) => {
-        const next = prev.filter((_, i) => i !== index);
-        try {
-          onNotesChange?.(next);
-        } catch {}
-        return next;
-      });
-    },
-    [onNotesChange],
-  );
+  const deleteNote = useCallback((index: number) => {
+    setNotes((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
-  const editNote = useCallback(
-    (id: string, newContent: string) => {
-      setNotes((prev) => {
-        const next = prev.map((n) =>
-          n.id === id
-            ? {
-                ...n,
-                content: newContent,
-                updatedAt: new Date().toISOString(),
-              }
-            : n,
-        );
-        try {
-          onNotesChange?.(next);
-        } catch {}
-        return next;
-      });
-    },
-    [onNotesChange],
-  );
+  const editNote = useCallback((id: string, newContent: string) => {
+    setNotes((prev) =>
+      prev.map((n) =>
+        n.id === id
+          ? { ...n, content: newContent, updatedAt: new Date().toISOString() }
+          : n,
+      ),
+    );
+  }, []);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {

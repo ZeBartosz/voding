@@ -27,6 +27,7 @@ interface VideoPlayerProps {
   loadWithId: (id: string) => Promise<VoddingPayload | null>;
   loading: boolean;
   setVideo: (v: Video | null) => void;
+  onRestoring?: (isRestoring: boolean) => void;
 }
 
 const VideoPlayer: FC<VideoPlayerProps> = ({
@@ -42,6 +43,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   loadWithId,
   loading,
   setVideo,
+  onRestoring,
 }) => {
   if (video === null)
     return (
@@ -55,6 +57,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         loadWithId={loadWithId}
         loading={loading}
         setVideo={setVideo}
+        onRestoring={onRestoring}
       />
     );
 
@@ -93,6 +96,7 @@ interface MissingProps {
   loadWithId: (id: string) => Promise<VoddingPayload | null>;
   loading: boolean;
   setVideo: (v: Video | null) => void;
+  onRestoring?: (isRestoring: boolean) => void;
 }
 
 const MissingURL: FC<MissingProps> = ({
@@ -105,18 +109,37 @@ const MissingURL: FC<MissingProps> = ({
   loadWithId,
   loading,
   setVideo,
+  onRestoring,
 }) => {
   const handleRestore = async (v: VoddingPayload) => {
+    try {
+      onRestoring?.(true);
+    } catch {}
+
     if (v.video?.url) handleSetInputValue(v.video.url);
 
-    if (v.id) {
-      try {
-        await loadWithId(v.id);
-      } catch {}
-    }
+    try {
+      if (v.id) {
+        try {
+          await loadWithId(v.id);
+        } catch {}
+      }
 
-    if (v.video) {
-      setVideo(v.video);
+      if (v.video) {
+        setVideo(v.video);
+      }
+    } finally {
+      try {
+        window.setTimeout(() => {
+          try {
+            onRestoring?.(false);
+          } catch {}
+        }, 400);
+      } catch {
+        try {
+          onRestoring?.(false);
+        } catch {}
+      }
     }
   };
 

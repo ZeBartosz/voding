@@ -36,26 +36,50 @@ function App() {
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
-  const prevNotesLengthRef = useRef<number>(0);
+
+  const autosaveTimer = useRef<number | null>(null);
+  const prevNotesRef = useRef<Note[] | null>(null);
+  const isRestoringRef = useRef<boolean>(false);
+  const restoreClearTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (vodding?.notes) {
       setNotes(vodding.notes);
-      prevNotesLengthRef.current = vodding.notes.length ?? 0;
+      prevNotesRef.current = vodding.notes;
     } else {
-      prevNotesLengthRef.current = 0;
+      prevNotesRef.current = null;
     }
   }, [vodding]);
 
   useEffect(() => {
-    const prev = prevNotesLengthRef.current ?? 0;
-    const added = notes.length > prev;
-    prevNotesLengthRef.current = notes.length;
+    if (isRestoringRef.current) {
+      // while restoring we don't want autosave to run; keep snapshot in sync
+      prevNotesRef.current = notes;
+      return;
+    }
+    if (!video && !vodding) {
+      prevNotesRef.current = notes;
+      return;
+    }
 
-    if (!added) return;
-    if (!video && !vodding) return;
+    const prev = prevNotesRef.current ?? [];
+    const prevLen = prev.length;
+    const currLen = notes.length;
 
-    let cancelled = false;
+    const deleted = currLen < prevLen;
+    const edited =
+      currLen === prevLen &&
+      prevLen > 0 &&
+      prev.some((p: Note, i: number) => {
+        const next = notes[i];
+        return !!next && p.id === next.id && p.content !== next.content;
+      });
+
+    if (autosaveTimer.current) {
+      window.clearTimeout(autosaveTimer.current);
+      autosaveTimer.current = null;
+    }
+
     const doSave = async () => {
       try {
         const payload = vodding
@@ -68,13 +92,26 @@ function App() {
               notes,
             };
         await save(payload as any);
-        if (!cancelled) setLastSavedAt(new Date().toISOString());
+        setLastSavedAt(new Date().toISOString());
       } catch {}
     };
-    void doSave();
+
+    if (edited || deleted) {
+      void doSave();
+      prevNotesRef.current = notes;
+      return;
+    }
+
+    autosaveTimer.current = window.setTimeout(async () => {
+      await doSave();
+      prevNotesRef.current = notes;
+    }, 700);
 
     return () => {
-      cancelled = true;
+      if (autosaveTimer.current) {
+        window.clearTimeout(autosaveTimer.current);
+        autosaveTimer.current = null;
+      }
     };
   }, [notes, save, video, vodding]);
 
@@ -85,7 +122,7 @@ function App() {
     setVideo(null);
     handleSetInputValue("");
 
-    prevNotesLengthRef.current = 0;
+    prevNotesRef.current = [];
   };
 
   return (
@@ -135,6 +172,23 @@ function App() {
               loadWithId={loadWithId}
               loading={loading}
               setVideo={setVideo}
+              onRestoring={(isRestoring: boolean) => {
+                isRestoringRef.current = isRestoring;
+                if (isRestoring && autosaveTimer.current) {
+                  window.clearTimeout(autosaveTimer.current);
+                  autosaveTimer.current = null;
+                }
+                if (!isRestoring) {
+                  if (restoreClearTimer.current) {
+                    window.clearTimeout(restoreClearTimer.current);
+                    restoreClearTimer.current = null;
+                  }
+                  restoreClearTimer.current = window.setTimeout(() => {
+                    isRestoringRef.current = false;
+                    restoreClearTimer.current = null;
+                  }, 350) as unknown as number;
+                }
+              }}
             />
           </div>
 
