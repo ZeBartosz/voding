@@ -163,53 +163,82 @@ const MissingURL: FC<MissingProps> = ({
 
         {!loading && voddingList && voddingList.length > 0 && (
           <ul className="vodding-list" aria-label="Saved vodding list">
-            {voddingList.map((v) => (
-              <li key={v.id} className="vodding-item">
-                <div className="vodding-meta">
-                  <div className="vodding-title">
-                    {v.video?.name || v.video?.url || "Untitled VOD"}
+            {voddingList.map((v) => {
+              const initials = (() => {
+                const name = v.video?.name || v.video?.url || "VOD";
+                return name
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((n) => (n ? n[0] : ""))
+                  .join("")
+                  .toUpperCase();
+              })();
+
+              return (
+                <li key={v.id} className="vodding-item">
+                  <div className="vodding-thumb" aria-hidden>
+                    <div className="thumb-icon">{initials}</div>
                   </div>
 
-                  <div className="vodding-row">
-                    <div className="vodding-url" title={v.video?.url}>
-                      {v.video?.url}
+                  <div className="vodding-meta">
+                    <div className="vodding-title">
+                      {v.video?.name || v.video?.url || "Untitled VOD"}
                     </div>
 
-                    <div className="vodding-badges">
-                      <span className="notes-badge">
-                        {Array.isArray(v.notes) ? v.notes.length : 0} notes
-                      </span>
-                      <span className="time-badge">
-                        {v.createdAt
-                          ? new Date(v.createdAt).toLocaleString()
-                          : ""}
-                      </span>
+                    <div className="vodding-row">
+                      <div className="vodding-url" title={v.video?.url}>
+                        {v.video?.url}
+                      </div>
+
+                      <div className="vodding-badges">
+                        <span
+                          className="notes-badge"
+                          title={`${Array.isArray(v.notes) ? v.notes.length : 0} notes`}
+                        >
+                          📄 {Array.isArray(v.notes) ? v.notes.length : 0}
+                        </span>
+
+                        <span
+                          className="time-badge"
+                          title={
+                            v.createdAt
+                              ? new Date(v.createdAt).toLocaleString()
+                              : ""
+                          }
+                        >
+                          🗓{" "}
+                          {v.createdAt
+                            ? new Date(v.createdAt).toLocaleString()
+                            : ""}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="vodding-actions">
-                  <button
-                    type="button"
-                    className="restore-btn"
-                    onClick={() => handleRestore(v)}
-                    aria-label={`Restore ${v.id}`}
-                    title="Restore VOD and populate notes"
-                  >
-                    Restore
-                  </button>
-                  <button
-                    type="button"
-                    className="delete-btn"
-                    onClick={() => handleDelete(v.id)}
-                    aria-label={`Delete ${v.id}`}
-                    title="Delete saved VOD"
-                  >
-                    🗑
-                  </button>
-                </div>
-              </li>
-            ))}
+                  <div className="vodding-actions">
+                    <button
+                      type="button"
+                      className="restore-btn"
+                      onClick={() => handleRestore(v)}
+                      aria-label={`Restore ${v.id}`}
+                      title="Restore VOD and populate notes"
+                    >
+                      ⟲ Restore
+                    </button>
+
+                    <button
+                      type="button"
+                      className="delete-btn"
+                      onClick={() => handleDelete(v.id)}
+                      aria-label={`Delete ${v.id}`}
+                      title="Delete saved VOD"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

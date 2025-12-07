@@ -58,35 +58,41 @@ export const useSession = () => {
       setVodding(null);
       setVoddingList([]);
     };
-  }, []);
+  }, [loadAll]);
 
-  const save = useCallback(async (payload: VoddingPayload): Promise<any> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await saveVod(payload);
-      if (res) setVodding(res);
-      return res;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const save = useCallback(
+    async (payload: VoddingPayload): Promise<VoddingPayload> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await saveVod(payload);
+        if (res) setVodding(res);
+        return res;
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(msg);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const deleteVodById = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      let videoId = id;
       const maybeVodding = await getVoddingById(id);
-      if (maybeVodding?.video?.id) {
-        videoId = maybeVodding.video.id;
+
+      if (!maybeVodding?.video?.id) {
+        throw new Error(
+          `Cannot delete: vodding record ${id} has no associated video.id`,
+        );
       }
 
+      const videoId = maybeVodding.video.id;
       await deleteVod(videoId);
       setVoddingList((prev) => prev.filter((v) => v.video?.id !== videoId));
     } catch (err: unknown) {
