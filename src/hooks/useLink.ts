@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Video } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
-export const useLink = () => {
+export const useLink = (currentTitle: string | null) => {
   const [video, setVideo] = useState<Video | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -68,17 +68,16 @@ export const useLink = () => {
 
       setError("");
 
-      // initialize video state for the submitted URL
       const newVideo: Video = {
         id: uuidv4(),
         url: cleanUrl,
-        name: cleanUrl,
+        name: currentTitle || "Untitled",
         addedAt: new Date().toISOString(),
         provider: "youtube",
       };
       setVideo(newVideo);
     },
-    [inputValue, validateAndCleanUrl],
+    [inputValue, validateAndCleanUrl, currentTitle],
   );
 
   const handleSetInputValue = useCallback((value: string) => {
@@ -111,6 +110,19 @@ export const useLink = () => {
     }
   }, []);
 
+  const handleUpdateVideoName = useCallback((name: string) => {
+    setVideo((prev) => (prev ? { ...prev, name } : prev));
+  }, []);
+
+  useEffect(() => {
+    if (!currentTitle) return;
+    setVideo((prev) => {
+      if (!prev) return prev;
+      if (prev.name === currentTitle) return prev;
+      return { ...prev, name: currentTitle };
+    });
+  }, [currentTitle, setVideo]);
+
   return {
     video,
     setVideo,
@@ -124,5 +136,6 @@ export const useLink = () => {
     scale,
     handleMapView,
     handleNoteJump,
+    handleUpdateVideoName,
   };
 };

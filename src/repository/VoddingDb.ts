@@ -65,10 +65,10 @@ export const saveVod = async (
     return updatedStation;
   } else {
     const currentDBArray = (await db.getAll("vodding")).sort(
-      (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt),
+      (a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt),
     );
 
-    if (currentDBArray.length >= MAX_VODS) {
+    if (currentDBArray.length > MAX_VODS) {
       const oldestStation = currentDBArray[0];
       await db.delete("vodding", oldestStation.id);
     }

@@ -41,4 +41,4 @@ export interface Vodding extends DBSchema {
   };
 }
 
-export const MAX_VODS = 5;
+export const MAX_VODS = 6;

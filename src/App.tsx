@@ -11,7 +11,13 @@ import type { Note } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
 function App() {
-  const { handleProgress, currentTimeRef } = useVideoMetaData();
+  const {
+    handleProgress,
+    currentTimeRef,
+    currentTitle,
+    handleTitleChange,
+    setCurrentTitle,
+  } = useVideoMetaData();
   const {
     playerRef,
     video,
@@ -23,7 +29,7 @@ function App() {
     handleMapView,
     handleResetFocusAndScale,
     handleNoteJump,
-  } = useLink();
+  } = useLink(currentTitle);
   const {
     save,
     voddingList,
@@ -32,7 +38,7 @@ function App() {
     loading,
     loadAll,
     vodding,
-  } = useSession();
+  } = useSession(setCurrentTitle);
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
@@ -82,7 +88,12 @@ function App() {
     const doSave = async () => {
       try {
         const payload = vodding
-          ? { ...vodding, notes, updatedAt: new Date().toISOString() }
+          ? {
+              ...vodding,
+              video: video ?? vodding.video,
+              notes,
+              updatedAt: new Date().toISOString(),
+            }
           : {
               id: uuidv4(),
               createdAt: new Date().toISOString(),
@@ -112,7 +123,7 @@ function App() {
         autosaveTimer.current = null;
       }
     };
-  }, [notes, save, video, vodding]);
+  }, [notes, save, video, vodding, currentTitle]);
 
   const handleNewSession = async () => {
     setNotes([]);
@@ -137,7 +148,9 @@ function App() {
               V
             </div>
             <div className="brand-title">
-              <div className="title">VOD Review Session</div>
+              <div className="title">
+                {currentTitle ? video?.name : "VOD Review Session"}
+              </div>
               <div className="subtitle">Competitive Analysis</div>
             </div>
           </div>
@@ -159,6 +172,7 @@ function App() {
           <div className="video-column">
             <VideoPlayer
               handleProgress={handleProgress}
+              handleTitleChange={handleTitleChange}
               playerRef={playerRef}
               video={video}
               handleSubmit={handleSubmit}

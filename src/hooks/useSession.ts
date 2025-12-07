@@ -7,20 +7,26 @@ import {
   saveVod,
 } from "../repository/VoddingDb";
 
-export const useSession = () => {
+export const useSession = (setCurrentTitle: (title: string | null) => void) => {
   const [voddingList, setVoddingList] = useState<VoddingPayload[]>([]);
   const [vodding, setVodding] = useState<VoddingPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  console.log(voddingList);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     setVodding(null);
     setVoddingList([]);
+    setCurrentTitle(null);
 
     try {
-      const data = await getVoddingList();
+      const raw = await getVoddingList();
+      const data = (raw ?? []).sort(
+        (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
+      );
       setVoddingList(data ?? []);
       return data;
     } catch (err: unknown) {

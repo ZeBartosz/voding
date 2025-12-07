@@ -14,8 +14,6 @@ export const useNotes = (
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Accept empty arrays as valid initial notes.
-    // Only sync when initialNotes is explicitly provided (not undefined/null).
     if (initialNotes === undefined || initialNotes === null) return;
     setNotes(initialNotes);
   }, [initialNotes]);

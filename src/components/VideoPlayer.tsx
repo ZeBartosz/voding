@@ -16,6 +16,7 @@ import type { Video, VoddingPayload } from "../types";
 
 interface VideoPlayerProps {
   handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
+  handleTitleChange: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
   playerRef: React.Ref<HTMLVideoElement>;
   video: Video | null;
   handleSubmit: (e: React.FormEvent) => void;
@@ -32,6 +33,7 @@ interface VideoPlayerProps {
 
 const VideoPlayer: FC<VideoPlayerProps> = ({
   handleProgress,
+  handleTitleChange,
   playerRef,
   video,
   handleSubmit,
@@ -70,6 +72,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
           slot="media"
           controls={false}
           className="react-player"
+          onLoadedMetadata={handleTitleChange}
           onTimeUpdate={handleProgress}
         />
         <MediaControlBar>
@@ -124,7 +127,7 @@ const MissingURL: FC<MissingProps> = ({
       window.setTimeout(() => onRestoring?.(false), 400);
     }
   };
-
+  console.log(voddingList);
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
@@ -164,30 +167,12 @@ const MissingURL: FC<MissingProps> = ({
         {!loading && voddingList && voddingList.length > 0 && (
           <ul className="vodding-list" aria-label="Saved vodding list">
             {voddingList.map((v) => {
-              const initials = (() => {
-                const name = v.video?.name || v.video?.url || "VOD";
-                return name
-                  .split(/\s+/)
-                  .slice(0, 2)
-                  .map((n) => (n ? n[0] : ""))
-                  .join("")
-                  .toUpperCase();
-              })();
-
               return (
                 <li key={v.id} className="vodding-item">
-                  <div className="vodding-thumb" aria-hidden>
-                    <div className="thumb-icon">{initials}</div>
-                  </div>
-
                   <div className="vodding-meta">
-                    <div className="vodding-title">
-                      {v.video?.name || v.video?.url || "Untitled VOD"}
-                    </div>
-
                     <div className="vodding-row">
-                      <div className="vodding-url" title={v.video?.url}>
-                        {v.video?.url}
+                      <div className="vodding-title">
+                        {v.video?.name || v.video?.url || "Untitled VOD"}
                       </div>
 
                       <div className="vodding-badges">
@@ -201,14 +186,13 @@ const MissingURL: FC<MissingProps> = ({
                         <span
                           className="time-badge"
                           title={
-                            v.createdAt
-                              ? new Date(v.createdAt).toLocaleString()
+                            v.updatedAt
+                              ? new Date(v.updatedAt).toLocaleString()
                               : ""
                           }
                         >
-                          🗓{" "}
-                          {v.createdAt
-                            ? new Date(v.createdAt).toLocaleString()
+                          {v.updatedAt
+                            ? new Date(v.updatedAt).toLocaleString()
                             : ""}
                         </span>
                       </div>

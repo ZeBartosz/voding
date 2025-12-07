@@ -34,7 +34,7 @@
     margin: 0;
     padding: 0;
     max-height: 240px;
-    overflow: auto;
+    box-sizing: border-box;
 }
 
 .vodding-item {
