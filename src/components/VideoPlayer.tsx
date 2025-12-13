@@ -69,9 +69,14 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         <ReactPlayer
           ref={playerRef}
           src={video.url}
-          slot="media"
           controls={false}
+          slot="media"
           className="react-player"
+          config={{
+            youtube: {
+              referrerpolicy: "strict-origin-when-cross-origin",
+            },
+          }}
           onLoadedMetadata={handleTitleChange}
           onTimeUpdate={handleProgress}
         />
