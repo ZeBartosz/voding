@@ -37,7 +37,9 @@ export const useLink = (currentTitle: string | null) => {
           return urlObj.searchParams.get("v");
         }
 
-        const match = /\/(?:embed|shorts)\/([\w-]{11})/.exec(urlObj.pathname);
+        const match = /\/(?:embed|shorts|user|live)\/([\w-]{11})/.exec(
+          urlObj.pathname,
+        );
         return match ? match[1] : null;
       }
     } catch {
