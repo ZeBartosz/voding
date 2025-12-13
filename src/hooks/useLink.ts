@@ -36,8 +36,7 @@ export const useLink = (currentTitle: string | null) => {
         if (urlObj.pathname === "/watch") {
           return urlObj.searchParams.get("v");
         }
-
-        const match = /\/(?:embed|shorts|user|live)\/([\w-]{11})/.exec(
+        const match = /\/(?:embed|shorts|live)\/([\w-]{11})/.exec(
           urlObj.pathname,
         );
         return match ? match[1] : null;
