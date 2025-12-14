@@ -27,14 +27,21 @@ export default function useNotesAutosave({
   const prevNotesRef = useRef<Note[] | null>(null);
   const isRestoringRef = useRef<boolean>(false);
   const restoreClearTimer = useRef<number | null>(null);
+  const draftMetaRef = useRef<{ id: string; createdAt: string } | null>(null);
 
-  // stable save function that composes payload similar to how App did
   const doSave = useCallback(async () => {
     try {
       if (!vodding && !video) return;
 
       const currentVideo = video ?? vodding?.video;
       if (!currentVideo) return;
+
+      if (!vodding && !draftMetaRef.current) {
+        draftMetaRef.current = {
+          id: uuidv4(),
+          createdAt: new Date().toISOString(),
+        };
+      }
 
       const payload = vodding
         ? {
@@ -44,8 +51,8 @@ export default function useNotesAutosave({
             updatedAt: new Date().toISOString(),
           }
         : {
-            id: uuidv4(),
-            createdAt: new Date().toISOString(),
+            id: draftMetaRef.current!.id,
+            createdAt: draftMetaRef.current!.createdAt,
             updatedAt: new Date().toISOString(),
             video: currentVideo,
             notes,
