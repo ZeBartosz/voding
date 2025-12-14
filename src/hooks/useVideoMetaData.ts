@@ -23,10 +23,14 @@ export const useVideoMetaData = () => {
           title = el.title;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (!title && typeof el.api.videoTitle === "string") {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-          title = el.api.videoTitle;
+        if (!title) {
+          const maybeApi = (el as unknown as { api?: unknown }).api;
+          if (typeof maybeApi === "object" && maybeApi !== null) {
+            const api = maybeApi as { videoTitle?: unknown };
+            if (typeof api.videoTitle === "string") {
+              title = api.videoTitle;
+            }
+          }
         }
 
         if (!title && typeof el.getAttribute === "function") {
