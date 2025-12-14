@@ -9,6 +9,93 @@
     box-sizing: border-box;
 }
 
+.has-tooltip {
+    position: relative;
+}
+.has-tooltip[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 6px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 160ms ease,
+        transform 160ms ease;
+    z-index: 40;
+    will-change: opacity, transform;
+}
+
+.has-tooltip:hover[data-tooltip]::after,
+.has-tooltip:focus[data-tooltip]::after,
+.has-tooltip:focus-within[data-tooltip]::after {
+    transition-delay: 500ms;
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px);
+}
+
+/* Hover / focus states for action icon buttons in notes */
+.result-actions-row .btn,
+.result-card .result-actions-row .btn {
+    transition:
+        background-color 160ms ease,
+        transform 120ms ease,
+        box-shadow 160ms ease,
+        color 160ms ease;
+    -webkit-transition:
+        background-color 160ms ease,
+        transform 120ms ease,
+        box-shadow 160ms ease,
+        color 160ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 8px;
+}
+
+.result-actions-row .btn:hover,
+.result-card .result-actions-row .btn:hover {
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(184, 46, 46, 0.08);
+}
+
+.result-actions-row .btn:focus,
+.result-card .result-actions-row .btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(184, 46, 46, 0.08);
+    border-color: rgba(184, 46, 46, 0.5);
+}
+
+/* Make sure SVG icons align nicely */
+.result-actions-row .btn svg,
+.result-card .result-actions-row .btn svg {
+    vertical-align: middle;
+    display: inline-block;
+}
+
+/* Color adjustments for the delete/trash icon */
+.result-actions-row .btn .text-red-600,
+.result-card .result-actions-row .btn .text-red-600 {
+    color: #b82e2e;
+    transition: color 160ms ease;
+}
+
+.result-actions-row .btn:hover .text-red-600,
+.result-card .result-actions-row .btn:hover .text-red-600 {
+    color: #d04343;
+}
+
 .note-edit-textarea,
 .edit-area textarea {
     width: 100%;
@@ -29,8 +116,9 @@
 .edit-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
+    padding-top: 6px;
 }
 
 .note-edit-actions .btn,
@@ -83,5 +171,5 @@
 }
 
 .result-card .note-edit-wrap {
-    margin-top: 6px;
+    margin-top: 12px;
 }

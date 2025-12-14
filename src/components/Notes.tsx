@@ -7,6 +7,7 @@ import React, {
   type RefObject,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { Send, Edit, Trash, Clock } from "lucide-react";
 import type { Note } from "../types";
 
 interface NotesProps {
@@ -202,7 +203,7 @@ const Notes: React.FC<NotesProps> = ({
             <div className="empty-icon" aria-hidden>
               <svg
                 width="28"
-                height="28"
+                height="28Unmute"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -240,7 +241,10 @@ const Notes: React.FC<NotesProps> = ({
               >
                 <div className="result-card-header">
                   <div className="result-meta">
-                    <span className="timestamp">{formatTime(n.timestamp)}</span>
+                    <span className="timestamp">
+                      <Clock size={12} className="timestamp-icon" />{" "}
+                      {formatTime(n.timestamp)}
+                    </span>
                   </div>
 
                   <div className="result-actions-row">
@@ -249,9 +253,10 @@ const Notes: React.FC<NotesProps> = ({
                         handleNoteJump(n.timestamp);
                       }}
                       aria-label="Jump to note"
-                      className="btn btn-ghost"
+                      className="btn btn-ghost has-tooltip"
+                      data-tooltip="Jump"
                     >
-                      Jump
+                      <Send size={16} />
                     </button>
 
                     {!isEditing && !readOnly && (
@@ -261,9 +266,10 @@ const Notes: React.FC<NotesProps> = ({
                           setEditingValue(n.content);
                         }}
                         aria-label="Edit note"
-                        className="btn btn-ghost"
+                        className="btn btn-ghost has-tooltip"
+                        data-tooltip="Edit"
                       >
-                        Edit
+                        <Edit size={16} />
                       </button>
                     )}
 
@@ -272,13 +278,11 @@ const Notes: React.FC<NotesProps> = ({
                         deleteNote(n.id);
                       }}
                       aria-label="Delete note"
-                      className="btn"
+                      className="btn has-tooltip"
                       disabled={readOnly}
-                      title={
-                        readOnly ? "Disabled in read-only view" : undefined
-                      }
+                      data-tooltip="Delete"
                     >
-                      Delete
+                      <Trash size={16} className="text-red-600" />
                     </button>
                   </div>
                 </div>
@@ -320,7 +324,7 @@ const Notes: React.FC<NotesProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div>{n.content}</div>
+                    <div className="note-content">{n.content}</div>
                   )}
                 </div>
               </div>

@@ -252,7 +252,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
           <MediaTimeRange />
           <MediaTimeDisplay showDuration />
           <MediaMuteButton />
-          <MediaVolumeRange />
+          <MediaVolumeRange mediaMuted={true} />
         </MediaControlBar>
       </MediaController>
     </div>
