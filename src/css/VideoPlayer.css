@@ -35,6 +35,7 @@
     padding: 0;
     max-height: 240px;
     box-sizing: border-box;
+    min-width: 750px;
 }
 
 .vodding-item {
@@ -101,6 +102,9 @@
 
 .vodding-title {
     font-weight: 600;
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -129,6 +133,7 @@
     gap: 8px;
     align-items: center;
     margin-left: auto;
+    flex: 0 0 auto;
 }
 
 .notes-badge,
@@ -284,6 +289,7 @@
     }
     .vodding-list {
         max-height: 200px;
+        min-width: 0;
     }
     .missing-video .missing-input,
     .missing-video input {
@@ -385,7 +391,6 @@
     margin: 18px 0;
 }
 
-/* buttons in the fallback UI use the embed-btn classes from the markup */
 .embed-unavailable-actions .embed-btn,
 .embed-unavailable-actions a[role="button"] {
     display: inline-flex;
@@ -405,7 +410,6 @@
     color: var(--text);
 }
 
-/* Primary action: black filled button like screenshot */
 .embed-unavailable-actions .embed-btn-primary {
     background: #0f0f0f;
     color: #fff;
@@ -413,14 +417,12 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
-/* Secondary: white button with subtle border (Copy link) */
 .embed-unavailable-actions .embed-btn {
     background: #ffffff;
     color: var(--text);
     border: 1px solid rgba(16, 18, 20, 0.06);
 }
 
-/* Ghost / link style for less important actions */
 .embed-unavailable-actions .embed-btn-ghost {
     background: transparent;
     border: none;
@@ -428,7 +430,6 @@
     text-decoration: none;
 }
 
-/* hover */
 .embed-unavailable-actions .embed-btn:hover,
 .embed-unavailable-actions a[role="button"]:hover {
     transform: translateY(-3px);
@@ -437,12 +438,7 @@
 
 .embed-unavailable-help {
     margin-top: 18px;
-    color: rgba(
-        255,
-        255,
-        255,
-        0.62
-    ); /* make the help text visible on dark backgrounds */
+    color: rgba(255, 255, 255, 0.62);
     font-size: 13px;
     line-height: 1.45;
     border-top: 1px solid rgba(255, 255, 255, 0.04);
@@ -451,13 +447,7 @@
     margin-left: auto;
     margin-right: auto;
 }
-.embed-unavailable-help small {
-    display: block;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 13px;
-}
 
-/* small responsive tweaks for the card */
 @media (max-width: 640px) {
     .embed-unavailable-card {
         padding: 18px;

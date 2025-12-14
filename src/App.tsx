@@ -165,9 +165,6 @@ function App() {
 
           <div className="topbar-right">
             <div className="small">Session Notes</div>
-            <div className="notes-pill">
-              {notes.length} {notes.length === 1 ? "note" : "notes"}
-            </div>
             {lastSavedAt && (
               <div style={{ marginLeft: 12, fontSize: 12, color: "#666" }}>
                 Saved {new Date(lastSavedAt).toLocaleTimeString()}
@@ -212,28 +209,30 @@ function App() {
             />
           </div>
 
-          <aside className="sidebar">
-            <div className="sidebar-header">
-              <div className="header-left">
-                <div className="h1">Session Notes</div>
-                <div className="small">Add your observations</div>
+          {video && (
+            <aside className="sidebar">
+              <div className="sidebar-header">
+                <div className="header-left">
+                  <div className="h1">Session Notes</div>
+                  <div className="small">Add your observations</div>
+                </div>
+                <div className="dot">•</div>
               </div>
-              <div className="dot">•</div>
-            </div>
 
-            <div className="input-container">
-              <ResultBox
-                currentTime={currentTimeRef}
-                handleNoteJump={handleNoteJump}
-                handleMapView={handleMapView}
-                handleResetFocusAndScale={handleResetFocusAndScale}
-                initialNotes={notes}
-                onNotesChange={(n: Note[]) => {
-                  setNotes(n);
-                }}
-              />
-            </div>
-          </aside>
+              <div className="input-container">
+                <ResultBox
+                  currentTime={currentTimeRef}
+                  handleNoteJump={handleNoteJump}
+                  handleMapView={handleMapView}
+                  handleResetFocusAndScale={handleResetFocusAndScale}
+                  initialNotes={notes}
+                  onNotesChange={(n: Note[]) => {
+                    setNotes(n);
+                  }}
+                />
+              </div>
+            </aside>
+          )}
         </div>
       </div>
     </>
