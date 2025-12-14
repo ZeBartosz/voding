@@ -132,7 +132,7 @@ export const useLink = (currentTitle: string | null) => {
         if (name && video) {
           setVideo((prev) => (prev ? { ...prev, name } : prev));
         }
-        return false; // no change
+        return false;
       }
 
       const newVideo: Video = {
