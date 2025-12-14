@@ -54,9 +54,8 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   useEffect(() => {
     requestAnimationFrame(() => {
       setEmbedError(false);
-      setPlayerKey((k) => k + 1);
     });
-  }, [video]);
+  }, [video?.url]);
 
   const handleCopy = useCallback(async (text: string) => {
     try {

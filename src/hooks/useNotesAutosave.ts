@@ -95,10 +95,9 @@ export default function useNotesAutosave({
     }
 
     if (edited || deleted) {
-      const t = window.setTimeout(() => {
-        setTimeout(() => doSave(), 0);
-      }, 0);
-      autosaveTimer.current = t as unknown as number;
+      autosaveTimer.current = window.setTimeout(() => {
+        void doSave();
+      }, 0) as unknown as number;
       prevNotesRef.current = notes;
       return;
     }
@@ -138,10 +137,6 @@ export default function useNotesAutosave({
     };
   }, []);
 
-  const onNotesChange = useCallback((n: Note[]) => {
-    void n;
-  }, []);
-
   const onRestoring = useCallback((isRestoring: boolean) => {
     isRestoringRef.current = isRestoring;
     if (isRestoring && autosaveTimer.current) {
@@ -165,6 +160,5 @@ export default function useNotesAutosave({
     onRestoring,
     prevNotesRef,
     isRestoringRef,
-    onNotesChange,
   };
 }
