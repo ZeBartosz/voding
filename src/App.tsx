@@ -270,12 +270,32 @@ function App() {
             <div className="sidebar-header">
               <div className="header-left">
                 <div className="h1">Session Notes</div>
-                <div className="small">Add your observations</div>
+                <div className="small">
+                  {isFromTimestampUrl
+                    ? "Read-only session — notes are disabled"
+                    : "Add your observations"}
+                </div>
               </div>
               <div className="dot">•</div>
             </div>
 
             <div className="input-container">
+              {isFromTimestampUrl && (
+                <div
+                  className="readonly-overlay"
+                  role="status"
+                  aria-live="polite"
+                  title="Read-only session"
+                >
+                  <div>
+                    <div className="readonly-title">Read-only session</div>
+                    <div className="readonly-desc">
+                      This session was opened from a timestamped link — notes
+                      are read-only. You cannot add or edit notes in this view.
+                    </div>
+                  </div>
+                </div>
+              )}
               <Suspense
                 fallback={
                   <div className="results-loading">Loading session notes…</div>
@@ -288,6 +308,7 @@ function App() {
                   handleResetFocusAndScale={handleResetFocusAndScale}
                   initialNotes={notes}
                   onNotesChange={onNotesChange}
+                  readOnly={isFromTimestampUrl}
                 />
               </Suspense>
             </div>

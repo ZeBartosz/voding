@@ -16,6 +16,7 @@ interface NotesProps {
   handleNoteJump: (time: number) => void;
   initialNotes?: Note[] | null;
   onNotesChange?: (notes: Note[]) => void;
+  readOnly?: boolean;
 }
 
 const formatTime = (seconds: number): string => {
@@ -40,6 +41,7 @@ const Notes: React.FC<NotesProps> = ({
   handleNoteJump,
   initialNotes,
   onNotesChange,
+  readOnly = false,
 }) => {
   const controlled = typeof onNotesChange === "function";
 
@@ -84,6 +86,7 @@ const Notes: React.FC<NotesProps> = ({
   );
 
   const addNote = useCallback(() => {
+    if (readOnly) return;
     const text = inputValue.trim();
     if (!text) return;
 
@@ -105,18 +108,20 @@ const Notes: React.FC<NotesProps> = ({
       const el = resultsRef.current;
       if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     });
-  }, [inputValue, currentTime, notes, notify]);
+  }, [inputValue, currentTime, notes, notify, readOnly]);
 
   const deleteNote = useCallback(
     (id: string) => {
+      if (readOnly) return;
       const next = notes.filter((n) => n.id !== id);
       notify(next);
     },
-    [notes, notify],
+    [notes, notify, readOnly],
   );
 
   const saveEdit = useCallback(
     (id: string, newContent: string) => {
+      if (readOnly) return;
       const next = notes.map((n) =>
         n.id === id
           ? { ...n, content: newContent, updatedAt: new Date().toISOString() }
@@ -126,7 +131,7 @@ const Notes: React.FC<NotesProps> = ({
       setEditingId(null);
       setEditingValue("");
     },
-    [notes, notify],
+    [notes, notify, readOnly],
   );
 
   const handleKeyDown = useCallback(
@@ -220,7 +225,9 @@ const Notes: React.FC<NotesProps> = ({
             <div className="empty-sub">
               {query
                 ? "Try changing or clearing your search."
-                : "Add your first note below"}
+                : readOnly
+                  ? "This session is read-only."
+                  : "Add your first note below"}
             </div>
           </div>
         ) : (
@@ -247,12 +254,11 @@ const Notes: React.FC<NotesProps> = ({
                       Jump
                     </button>
 
-                    {!isEditing && (
+                    {!isEditing && !readOnly && (
                       <button
                         onClick={() => {
                           setEditingId(n.id);
                           setEditingValue(n.content);
-                          // focus is handled by rendering the textarea below
                         }}
                         aria-label="Edit note"
                         className="btn btn-ghost"
@@ -267,6 +273,10 @@ const Notes: React.FC<NotesProps> = ({
                       }}
                       aria-label="Delete note"
                       className="btn"
+                      disabled={readOnly}
+                      title={
+                        readOnly ? "Disabled in read-only view" : undefined
+                      }
                     >
                       Delete
                     </button>
@@ -280,6 +290,7 @@ const Notes: React.FC<NotesProps> = ({
                         autoFocus
                         className="note-edit-textarea"
                         value={editingValue}
+                        readOnly={readOnly}
                         onChange={(e) => {
                           setEditingValue(e.target.value);
                         }}
@@ -290,6 +301,10 @@ const Notes: React.FC<NotesProps> = ({
                             saveEdit(n.id, editingValue);
                           }}
                           className="btn btn-primary"
+                          disabled={readOnly}
+                          title={
+                            readOnly ? "Disabled in read-only view" : undefined
+                          }
                         >
                           Save
                         </button>
@@ -318,10 +333,13 @@ const Notes: React.FC<NotesProps> = ({
         <textarea
           ref={textareaRef}
           value={inputValue}
+          readOnly={readOnly}
           onChange={(e) => {
             setInputValue(e.target.value);
           }}
-          placeholder="Write your observation..."
+          placeholder={
+            readOnly ? "Read-only session" : "Write your observation..."
+          }
           onKeyDown={handleKeyDown}
           className="input-textarea"
         />
@@ -347,8 +365,14 @@ const Notes: React.FC<NotesProps> = ({
               addNote();
             }}
             className="btn btn-primary"
+            disabled={readOnly}
+            title={
+              readOnly
+                ? "Adding notes is disabled in read-only view"
+                : undefined
+            }
           >
-            + Add Note
+            {readOnly ? "Read-only" : "+ Add Note"}
           </button>
         </div>
       </div>
