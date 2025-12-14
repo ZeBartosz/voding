@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "idb": "^8.0.3",
+    "jspdf": "^3.0.4",
     "media-chrome": "^4.16.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

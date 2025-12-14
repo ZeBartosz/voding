@@ -7,6 +7,7 @@ import "./css/VideoPlayer.css";
 import { useLink } from "./hooks/useLink";
 import { useSession } from "./hooks/useSession";
 import { useVideoMetaData } from "./hooks/useVideoMetaData";
+import useExportPdf from "./hooks/useExportPdf";
 import type { Note } from "./types";
 const ResultBox = lazy(() => import("./components/Notes"));
 
@@ -29,6 +30,7 @@ function App() {
     handleMapView,
     handleResetFocusAndScale,
     handleNoteJump,
+    loadVideoFromUrl,
   } = useLink(currentTitle);
   const {
     save,
@@ -42,6 +44,13 @@ function App() {
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+
+  const { exporting, exportPdf } = useExportPdf({
+    title: video?.name ?? currentTitle,
+    videoUrl: video?.url ?? "",
+    notes,
+    filename: `${(video?.name ?? "session").replace(/\s+/g, "_")}.pdf`,
+  });
 
   const autosaveTimer = useRef<number | null>(null);
   const prevNotesRef = useRef<Note[] | null>(null);
@@ -58,6 +67,49 @@ function App() {
       prevNotesRef.current = null;
     }
   }, [vodding]);
+
+  useEffect(() => {
+    const handleHash = () => {
+      try {
+        const raw = window.location.hash || "";
+        if (!raw) return;
+        // Convert hash fragment into a search params-like string and parse keys like v and t
+        const hash = raw.replace(/^#/, "");
+        const params = new URLSearchParams(hash);
+        const v = params.get("v");
+        const t = params.get("t");
+        if (!v) return;
+        const videoUrl = decodeURIComponent(v);
+        const time = t ? Number(t) : NaN;
+        // If we have a loader for video, load it then seek when ready
+        const loaded = loadVideoFromUrl ? loadVideoFromUrl(videoUrl) : false;
+        if (
+          loaded &&
+          !Number.isNaN(time) &&
+          typeof handleNoteJump === "function"
+        ) {
+          handleNoteJump(time);
+        } else if (
+          !loaded &&
+          !Number.isNaN(time) &&
+          typeof handleNoteJump === "function"
+        ) {
+          // If loadVideoFromUrl didn't set the video synchronously, still attempt to seek after a short delay
+          setTimeout(() => {
+            handleNoteJump(time);
+          }, 250);
+        }
+      } catch {
+        // ignore errors parsing the hash
+      }
+    };
+
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => {
+      window.removeEventListener("hashchange", handleHash);
+    };
+  }, [loadVideoFromUrl, handleNoteJump]);
 
   useEffect(() => {
     if (isRestoringRef.current) {
@@ -165,12 +217,31 @@ function App() {
 
           {video && (
             <div className="topbar-right">
-              <div className="small">Session Notes</div>
               {lastSavedAt && (
-                <div style={{ marginLeft: 12, fontSize: 12, color: "#666" }}>
+                <div style={{ fontSize: 12, color: "#666" }}>
                   Saved {new Date(lastSavedAt).toLocaleTimeString()}
                 </div>
               )}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginLeft: 12,
+                  gap: 12,
+                }}
+              >
+                <button
+                  onClick={() => {
+                    void exportPdf();
+                  }}
+                  disabled={exporting}
+                  className="btn btn-ghost"
+                  aria-label="Export notes"
+                  title="Export notes to PDF"
+                >
+                  {exporting ? "Exporting…" : "Export"}
+                </button>
+              </div>
             </div>
           )}
         </div>

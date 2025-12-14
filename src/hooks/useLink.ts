@@ -116,6 +116,31 @@ export const useLink = (currentTitle: string | null) => {
     setVideo((prev) => (prev ? { ...prev, name } : prev));
   }, []);
 
+  const loadVideoFromUrl = useCallback(
+    (url: string, name?: string): boolean => {
+      const cleanUrl = validateAndCleanUrl(url.trim());
+      if (!cleanUrl) {
+        setError("Invalid YouTube URL. Try: https://youtu.be/VIDEO_ID");
+        return false;
+      }
+
+      setError("");
+
+      const newVideo: Video = {
+        id: uuidv4(),
+        url: cleanUrl,
+        name: name ?? currentTitle ?? "Untitled",
+        addedAt: new Date().toISOString(),
+        provider: "youtube",
+      };
+
+      setVideo(newVideo);
+      setInputValue(cleanUrl);
+      return true;
+    },
+    [validateAndCleanUrl, currentTitle],
+  );
+
   useEffect(() => {
     if (!currentTitle) return;
     requestAnimationFrame(() => {
@@ -140,6 +165,7 @@ export const useLink = (currentTitle: string | null) => {
     scale,
     handleMapView,
     handleNoteJump,
+    loadVideoFromUrl,
     handleUpdateVideoName,
   };
 };
