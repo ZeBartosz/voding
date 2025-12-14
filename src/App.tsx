@@ -73,7 +73,6 @@ function App() {
       try {
         const raw = window.location.hash || "";
         if (!raw) return;
-        // Convert hash fragment into a search params-like string and parse keys like v and t
         const hash = raw.replace(/^#/, "");
         const params = new URLSearchParams(hash);
         const v = params.get("v");
@@ -81,26 +80,18 @@ function App() {
         if (!v) return;
         const videoUrl = decodeURIComponent(v);
         const time = t ? Number(t) : NaN;
-        // If we have a loader for video, load it then seek when ready
-        const loaded = loadVideoFromUrl ? loadVideoFromUrl(videoUrl) : false;
-        if (
-          loaded &&
-          !Number.isNaN(time) &&
-          typeof handleNoteJump === "function"
-        ) {
-          handleNoteJump(time);
-        } else if (
-          !loaded &&
-          !Number.isNaN(time) &&
-          typeof handleNoteJump === "function"
-        ) {
-          // If loadVideoFromUrl didn't set the video synchronously, still attempt to seek after a short delay
-          setTimeout(() => {
-            handleNoteJump(time);
-          }, 250);
+        const loaded = loadVideoFromUrl(videoUrl);
+
+        if (!Number.isNaN(time) && typeof handleNoteJump === "function") {
+          setTimeout(
+            () => {
+              handleNoteJump(time);
+            },
+            loaded ? 300 : 500,
+          );
         }
       } catch {
-        // ignore errors parsing the hash
+        //
       }
     };
 
@@ -232,7 +223,7 @@ function App() {
               >
                 <button
                   onClick={() => {
-                    void exportPdf();
+                    exportPdf();
                   }}
                   disabled={exporting}
                   className="btn btn-ghost"

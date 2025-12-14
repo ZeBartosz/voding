@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import type { Note } from "../types";
 import { jsPDF } from "jspdf";
-import type { jsPDF as JsPDFType } from "jspdf";
 
 interface UseExportPdfParams {
   title?: string | null;
@@ -40,7 +39,7 @@ export default function useExportPdf({
       const safeTitle = title ?? "VOD Review Session";
       const safeNotes: Note[] = notes ?? [];
 
-      const doc: JsPDFType = new jsPDF({
+      const doc: jsPDF = new jsPDF({
         unit: "pt",
         format: "a4",
       });
@@ -79,12 +78,9 @@ export default function useExportPdf({
         }
         doc.setTextColor(0, 0, 0);
         const contentX = marginLeft + 80;
-        const split = doc.splitTextToSize(
-          content ?? "(no content)",
-          maxWidth - 80,
-        );
+        const split = doc.splitTextToSize(content, maxWidth - 80) as string[];
         doc.text(split, contentX, y);
-        y += (split.length ?? 1) * 14;
+        y += split.length * 14;
         y += 8;
         if (y > pageHeight - 80) {
           const addPageFn = (doc as unknown as { addPage?: () => void })
@@ -96,7 +92,6 @@ export default function useExportPdf({
         }
       }
       try {
-        // Prefer output(blob) if available, otherwise fall back to save().
         const outputFn = (
           doc as unknown as { output?: (type: string) => unknown }
         ).output;
