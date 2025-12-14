@@ -1,14 +1,14 @@
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import VideoPlayer from "./components/VideoPlayer";
 import "./css/App.css";
 import "./css/Notes.css";
 import "./css/VideoPlayer.css";
-import { useVideoMetaData } from "./hooks/useVideoMetaData";
-import VideoPlayer from "./components/VideoPlayer";
-import ResultBox from "./components/Notes";
 import { useLink } from "./hooks/useLink";
 import { useSession } from "./hooks/useSession";
-import { useState, useEffect, useRef } from "react";
+import { useVideoMetaData } from "./hooks/useVideoMetaData";
 import type { Note } from "./types";
-import { v4 as uuidv4 } from "uuid";
+const ResultBox = lazy(() => import("./components/Notes"));
 
 function App() {
   const {
@@ -163,17 +163,16 @@ function App() {
             </div>
           </div>
 
-          <div className="topbar-right">
-            <div className="small">Session Notes</div>
-            <div className="notes-pill">
-              {notes.length} {notes.length === 1 ? "note" : "notes"}
+          {video && (
+            <div className="topbar-right">
+              <div className="small">Session Notes</div>
+              {lastSavedAt && (
+                <div style={{ marginLeft: 12, fontSize: 12, color: "#666" }}>
+                  Saved {new Date(lastSavedAt).toLocaleTimeString()}
+                </div>
+              )}
             </div>
-            {lastSavedAt && (
-              <div style={{ marginLeft: 12, fontSize: 12, color: "#666" }}>
-                Saved {new Date(lastSavedAt).toLocaleTimeString()}
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
         <div className="main">
@@ -212,28 +211,38 @@ function App() {
             />
           </div>
 
-          <aside className="sidebar">
-            <div className="sidebar-header">
-              <div className="header-left">
-                <div className="h1">Session Notes</div>
-                <div className="small">Add your observations</div>
+          {video && (
+            <aside className="sidebar">
+              <div className="sidebar-header">
+                <div className="header-left">
+                  <div className="h1">Session Notes</div>
+                  <div className="small">Add your observations</div>
+                </div>
+                <div className="dot">•</div>
               </div>
-              <div className="dot">•</div>
-            </div>
 
-            <div className="input-container">
-              <ResultBox
-                currentTime={currentTimeRef}
-                handleNoteJump={handleNoteJump}
-                handleMapView={handleMapView}
-                handleResetFocusAndScale={handleResetFocusAndScale}
-                initialNotes={notes}
-                onNotesChange={(n: Note[]) => {
-                  setNotes(n);
-                }}
-              />
-            </div>
-          </aside>
+              <div className="input-container">
+                <Suspense
+                  fallback={
+                    <div className="results-loading">
+                      Loading session notes…
+                    </div>
+                  }
+                >
+                  <ResultBox
+                    currentTime={currentTimeRef}
+                    handleNoteJump={handleNoteJump}
+                    handleMapView={handleMapView}
+                    handleResetFocusAndScale={handleResetFocusAndScale}
+                    initialNotes={notes}
+                    onNotesChange={(n: Note[]) => {
+                      setNotes(n);
+                    }}
+                  />
+                </Suspense>
+              </div>
+            </aside>
+          )}
         </div>
       </div>
     </>

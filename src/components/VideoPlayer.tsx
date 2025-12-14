@@ -1,4 +1,4 @@
-import React, { type FC } from "react";
+import React, { type FC, useCallback, useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import "media-chrome";
 import {
@@ -47,7 +47,44 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   setVideo,
   onRestoring,
 }) => {
-  if (video === null)
+  const [embedError, setEmbedError] = useState(false);
+  const [playerKey, setPlayerKey] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setEmbedError(false);
+      setPlayerKey((k) => k + 1);
+    });
+  }, [video]);
+
+  const handleCopy = useCallback(async (text: string) => {
+    try {
+      const clip = (
+        navigator as unknown as {
+          clipboard?: { writeText?: (s: string) => Promise<void> };
+        }
+      ).clipboard;
+      if (clip && typeof clip.writeText === "function") {
+        await clip.writeText(text);
+        setCopied(true);
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000);
+        return;
+      }
+    } catch {
+      //
+    }
+    window.prompt("Copy this link:", text);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    setEmbedError(false);
+    setPlayerKey((k) => k + 1);
+  }, []);
+
+  if (video === null) {
     return (
       <MissingURL
         handleSubmit={handleSubmit}
@@ -62,27 +99,161 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         onRestoring={onRestoring}
       />
     );
+  }
+
+  if (embedError) {
+    return (
+      <div
+        className="video-player-wrap video-unavailable"
+        role="region"
+        aria-label="Video unavailable"
+      >
+        <div className="embed-unavailable-card" role="alert">
+          <div className="embed-unavailable-icon" aria-hidden>
+            <div
+              style={{
+                width: 88,
+                height: 88,
+                borderRadius: 999,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.03)",
+                marginBottom: 12,
+              }}
+            >
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="rgba(140,140,140,0.9)"
+                  strokeWidth="1.2"
+                  fill="transparent"
+                />
+                <path
+                  d="M12 7.5v6"
+                  stroke="rgba(180,180,180,0.95)"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="12"
+                  cy="16.5"
+                  r="0.85"
+                  fill="rgba(180,180,180,0.95)"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="embed-unavailable-title">
+            Embedding disabled for this video
+          </h2>
+
+          <p className="embed-unavailable-desc">
+            The video can still be watched on YouTube, but embedding has been
+            blocked or the player configuration prevents playback inside this
+            app.
+          </p>
+
+          <div
+            className="embed-unavailable-actions"
+            role="group"
+            aria-label="Embed actions"
+          >
+            <a
+              className="btn btn-primary"
+              href={video.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              role="button"
+            >
+              Watch on YouTube
+            </a>
+
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                void handleCopy(video.url);
+              }}
+              aria-label="Copy video link"
+            >
+              {copied ? "Copied!" : "Copy link"}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={handleRetry}
+            >
+              Retry embed
+            </button>
+          </div>
+
+          <hr
+            aria-hidden
+            style={{
+              border: "none",
+              borderTop: "1px solid rgba(255,255,255,0.04)",
+              margin: "16px 0",
+            }}
+          />
+
+          <div className="embed-unavailable-help">
+            <small>
+              If you own this video, go to YouTube Studio → Content → More
+              options and enable "Allow embedding" to play this video inside
+              third-party sites.
+            </small>
+
+            <small>
+              Note: embedding can also be blocked for reasons beyond the
+              uploader's "Allow embedding" setting — for example copyright/
+              Content ID claims, age or region restrictions, privacy settings,
+              or other policy-related blocks. If you aren't the owner of the
+              video, try opening it on YouTube to see more details about the
+              restriction.
+            </small>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="video-player-wrap">
       <MediaController className="media-controller">
         <ReactPlayer
+          key={playerKey}
           ref={playerRef}
           src={video.url}
-          slot="media"
           controls={false}
+          slot="media"
           className="react-player"
           onLoadedMetadata={handleTitleChange}
           onTimeUpdate={handleProgress}
+          onError={() => {
+            setEmbedError(true);
+          }}
         />
         <MediaControlBar>
-          <MediaPlayButton></MediaPlayButton>
-          <MediaSeekBackwardButton></MediaSeekBackwardButton>
-          <MediaSeekForwardButton></MediaSeekForwardButton>
-          <MediaTimeRange></MediaTimeRange>
-          <MediaTimeDisplay showDuration></MediaTimeDisplay>
-          <MediaMuteButton></MediaMuteButton>
-          <MediaVolumeRange></MediaVolumeRange>
+          <MediaPlayButton />
+          <MediaSeekBackwardButton />
+          <MediaSeekForwardButton />
+          <MediaTimeRange />
+          <MediaTimeDisplay showDuration />
+          <MediaMuteButton />
+          <MediaVolumeRange />
         </MediaControlBar>
       </MediaController>
     </div>
@@ -124,7 +295,7 @@ const MissingURL: FC<MissingProps> = ({
     } catch (err) {
       console.error("Failed to restore VOD:", err);
     } finally {
-      window.setTimeout(() => onRestoring?.(false), 400);
+      setTimeout(() => onRestoring?.(false), 400);
     }
   };
 
@@ -203,7 +374,9 @@ const MissingURL: FC<MissingProps> = ({
                     <button
                       type="button"
                       className="restore-btn"
-                      onClick={() => void handleRestore(v)}
+                      onClick={() => {
+                        void handleRestore(v);
+                      }}
                       aria-label={`Restore ${v.id}`}
                       title="Restore VOD and populate notes"
                     >
@@ -213,7 +386,9 @@ const MissingURL: FC<MissingProps> = ({
                     <button
                       type="button"
                       className="delete-btn"
-                      onClick={() => void handleDelete(v.id)}
+                      onClick={() => {
+                        void handleDelete(v.id);
+                      }}
                       aria-label={`Delete ${v.id}`}
                       title="Delete saved VOD"
                     >

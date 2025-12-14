@@ -35,6 +35,7 @@
     padding: 0;
     max-height: 240px;
     box-sizing: border-box;
+    min-width: 750px;
 }
 
 .vodding-item {
@@ -101,6 +102,9 @@
 
 .vodding-title {
     font-weight: 600;
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -129,6 +133,7 @@
     gap: 8px;
     align-items: center;
     margin-left: auto;
+    flex: 0 0 auto;
 }
 
 .notes-badge,
@@ -284,6 +289,7 @@
     }
     .vodding-list {
         max-height: 200px;
+        min-width: 0;
     }
     .missing-video .missing-input,
     .missing-video input {
@@ -311,5 +317,158 @@
     }
     .video-player-wrap {
         height: 60vh;
+    }
+}
+
+/* Embed unavailable / fallback UI */
+.video-unavailable {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background: rgba(0, 0, 0, 0.06); /* subtle overlay to match app */
+    color: var(--text);
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.embed-unavailable-card {
+    max-width: 900px;
+    width: 92%;
+    text-align: center;
+    padding: 32px;
+    border-radius: 14px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid rgba(16, 18, 20, 0.06);
+    box-shadow: 0 18px 50px rgba(2, 6, 23, 0.45);
+    margin: 12px;
+    color: var(--text);
+}
+
+.embed-unavailable-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 6px auto 18px;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    border: 1px solid rgba(16, 18, 20, 0.06);
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.03),
+        rgba(0, 0, 0, 0.01)
+    );
+}
+
+.embed-unavailable-icon svg {
+    width: 44px;
+    height: 44px;
+    color: var(--muted);
+}
+
+.embed-unavailable-title {
+    margin: 8px 0 10px;
+    font-size: 22px;
+    color: var(--text);
+    font-weight: 800;
+}
+
+.embed-unavailable-desc {
+    margin: 0 auto 18px;
+    color: var(--muted);
+    line-height: 1.5;
+    font-size: 15px;
+    max-width: 680px;
+}
+
+.embed-unavailable-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 18px 0;
+}
+
+.embed-unavailable-actions .embed-btn,
+.embed-unavailable-actions a[role="button"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition:
+        transform 120ms ease,
+        box-shadow 120ms ease;
+    border: 1px solid rgba(16, 18, 20, 0.06);
+    background: transparent;
+    color: var(--text);
+}
+
+.embed-unavailable-actions .embed-btn-primary {
+    background: #0f0f0f;
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.embed-unavailable-actions .embed-btn {
+    background: #ffffff;
+    color: var(--text);
+    border: 1px solid rgba(16, 18, 20, 0.06);
+}
+
+.embed-unavailable-actions .embed-btn-ghost {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.embed-unavailable-actions .embed-btn:hover,
+.embed-unavailable-actions a[role="button"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(2, 6, 23, 0.12);
+}
+
+.embed-unavailable-help {
+    margin-top: 18px;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 13px;
+    line-height: 1.45;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    padding-top: 14px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 640px) {
+    .embed-unavailable-card {
+        padding: 18px;
+    }
+    .embed-unavailable-title {
+        font-size: 18px;
+    }
+    .embed-unavailable-desc {
+        font-size: 14px;
+    }
+    .embed-unavailable-actions .embed-btn,
+    .embed-unavailable-actions a[role="button"] {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    .embed-unavailable-icon {
+        width: 72px;
+        height: 72px;
+    }
+    .embed-unavailable-icon svg {
+        width: 32px;
+        height: 32px;
     }
 }
