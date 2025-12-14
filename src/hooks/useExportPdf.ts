@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { Note } from "../types";
 import { jsPDF } from "jspdf";
 
@@ -30,9 +30,14 @@ export default function useExportPdf({
   filename = "session-notes.pdf",
 }: UseExportPdfParams) {
   const [exporting, setExporting] = useState(false);
+  const exportingRef = useRef(false);
 
   const exportPdf = useCallback(() => {
-    if (exporting) return;
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
+    if (exportingRef.current) return;
+
+    exportingRef.current = true;
     setExporting(true);
 
     try {
@@ -43,31 +48,47 @@ export default function useExportPdf({
         unit: "pt",
         format: "a4",
       });
+
       const marginLeft = 40;
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const maxWidth = pageWidth - marginLeft * 2;
       let y = 48;
+
       doc.setFontSize(18);
       doc.text(safeTitle, marginLeft, y);
       doc.setFontSize(10);
+
       y += 18;
+
       const exportedAt = new Date().toLocaleString();
       const videoMeta = videoUrl ? " • Video: " + videoUrl : "";
+
       doc.text("Exported: " + exportedAt + videoMeta, marginLeft, y);
       y += 18;
       doc.setDrawColor(230);
       doc.line(marginLeft, y, pageWidth - marginLeft, y);
       y += 18;
       doc.setFontSize(12);
+
       for (const n of safeNotes) {
         const timeLabel = formatTime(n.timestamp);
         const ts = Math.floor(n.timestamp);
         const content = (n.content || "").trim();
+        const split = doc.splitTextToSize(content, maxWidth - 80) as string[];
+        const blockHeight = split.length * 14 + 8;
+
+        if (y + blockHeight > pageHeight - 80) {
+          doc.addPage();
+          y = 48;
+        }
+
         doc.setFontSize(11);
         doc.setTextColor(10, 90, 255);
+
         const timeX = marginLeft;
         doc.text(timeLabel, timeX, y);
+
         if (videoUrl) {
           try {
             const linkUrl = `${window.location.origin}${window.location.pathname}#v=${encodeURIComponent(videoUrl)}&t=${String(ts)}`;
@@ -78,19 +99,12 @@ export default function useExportPdf({
         }
         doc.setTextColor(0, 0, 0);
         const contentX = marginLeft + 80;
-        const split = doc.splitTextToSize(content, maxWidth - 80) as string[];
         doc.text(split, contentX, y);
+
         y += split.length * 14;
         y += 8;
-        if (y > pageHeight - 80) {
-          const addPageFn = (doc as unknown as { addPage?: () => void })
-            .addPage;
-          if (typeof addPageFn === "function") {
-            addPageFn.call(doc);
-          }
-          y = 48;
-        }
       }
+
       try {
         const outputFn = (
           doc as unknown as { output?: (type: string) => unknown }
@@ -105,7 +119,10 @@ export default function useExportPdf({
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+
+            setTimeout(() => {
+              URL.revokeObjectURL(url);
+            }, 0);
           } else {
             const saveFn = (doc as unknown as { save?: (name: string) => void })
               .save;
@@ -121,8 +138,9 @@ export default function useExportPdf({
       }
     } finally {
       setExporting(false);
+      exportingRef.current = false;
     }
-  }, [exporting, title, videoUrl, notes, filename]);
+  }, [title, videoUrl, notes, filename]);
 
   return { exporting, exportPdf };
 }
