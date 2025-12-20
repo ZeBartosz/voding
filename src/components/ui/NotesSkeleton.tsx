@@ -40,7 +40,7 @@ const NotesSkeleton = () => {
       </div>
       <div className="input-box">
         <div className="note-edit-wrap">
-          <Skeleton size="large" width="100%" />
+          <Skeleton size="large" width="100%" height={84} />
         </div>
         <div className="button-box" style={{ marginTop: 8 }}>
           <div style={{ display: "flex", gap: 8 }}>

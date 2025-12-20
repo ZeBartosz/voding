@@ -21,9 +21,7 @@ const Skeleton = ({
 
   return (
     <div className={`skeleton-container ${className}`}>
-      <div className="skeleton-container" aria-hidden="true">
-        <div className={`skeleton-box ${size}`} style={style} />
-      </div>
+      <div className={`skeleton-box ${size}`} style={style} />
     </div>
   );
 };
