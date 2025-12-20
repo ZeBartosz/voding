@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Note } from "../types";
 import { jsPDF } from "jspdf";
 
@@ -31,6 +31,16 @@ export default function useExportPdf({
 }: UseExportPdfParams) {
   const [exporting, setExporting] = useState(false);
   const exportingRef = useRef(false);
+  const exportTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (exportTimeoutRef.current) {
+        clearTimeout(exportTimeoutRef.current);
+        exportTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const exportPdf = useCallback(() => {
     if (typeof window === "undefined" || typeof document === "undefined")
@@ -143,7 +153,8 @@ export default function useExportPdf({
   }, [title, videoUrl, notes, filename]);
 
   const handleExport = useCallback(() => {
-    setTimeout(() => {
+    exportTimeoutRef.current = setTimeout(() => {
+      exportTimeoutRef.current = null;
       exportPdf();
     }, 0);
   }, [exportPdf]);
