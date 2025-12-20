@@ -22,6 +22,7 @@ const VideoPlayer = lazy(() => import("./components/VideoPlayer"));
 const ResultBox = lazy(() => import("./components/Notes"));
 
 function App() {
+  const [isFromTimestampUrl, setIsFromTimestampUrl] = useState<boolean>(false);
   const {
     handleProgress,
     currentTimeRef,
@@ -40,8 +41,8 @@ function App() {
     handleMapView,
     handleResetFocusAndScale,
     handleNoteJump,
-    loadVideoFromUrl,
-  } = useLink(currentTitle);
+    handleHash,
+  } = useLink(currentTitle, setIsFromTimestampUrl);
   const {
     save,
     voddingList,
@@ -52,10 +53,7 @@ function App() {
     vodding,
   } = useSession(setCurrentTitle);
 
-  const [isFromTimestampUrl, setIsFromTimestampUrl] = useState<boolean>(false);
-
   const { notes, setNotes } = useNotes(currentTimeRef, vodding?.notes);
-
   const { lastSavedAt, onRestoring, prevNotesRef } = useNotesAutosave({
     notes,
     vodding,
@@ -81,33 +79,6 @@ function App() {
       exportPdf();
     }, 0);
   }, [exportPdf]);
-
-  const handleHash = useCallback(() => {
-    try {
-      const raw = window.location.hash || "";
-      if (!raw) return;
-      const hash = raw.replace(/^#/, "");
-      const params = new URLSearchParams(hash);
-      const v = params.get("v");
-      const t = params.get("t");
-      if (!v) return;
-      const videoUrl = decodeURIComponent(v);
-      setIsFromTimestampUrl(true);
-      const time = t ? Number(t) : NaN;
-      const loaded = loadVideoFromUrl(videoUrl);
-
-      if (!Number.isNaN(time) && typeof handleNoteJump === "function") {
-        setTimeout(
-          () => {
-            handleNoteJump(time);
-          },
-          loaded ? 300 : 500,
-        );
-      }
-    } catch {
-      //
-    }
-  }, [loadVideoFromUrl, handleNoteJump]);
 
   useEffect(() => {
     const run = () => requestAnimationFrame(handleHash);
@@ -182,22 +153,6 @@ function App() {
     })();
   }, [handleSetInputValue, loadAll, setVideo, setNotes, prevNotesRef]);
 
-  const onNotesChange = setNotes;
-
-  const savedStyle: React.CSSProperties = useMemo(
-    () => ({ fontSize: 12, color: "#666" }),
-    [],
-  );
-  const rightControlsStyle: React.CSSProperties = useMemo(
-    () => ({
-      display: "flex",
-      alignItems: "center",
-      marginLeft: 12,
-      gap: 12,
-    }),
-    [],
-  );
-
   return (
     <div className="container">
       <Topbar
@@ -206,8 +161,6 @@ function App() {
         exporting={exporting}
         handleExport={handleExport}
         handleNewSession={handleNewSession}
-        savedStyle={savedStyle}
-        rightControlsStyle={rightControlsStyle}
       />
 
       <div className="main">
@@ -270,7 +223,7 @@ function App() {
                   handleMapView={handleMapView}
                   handleResetFocusAndScale={handleResetFocusAndScale}
                   initialNotes={notes}
-                  onNotesChange={onNotesChange}
+                  onNotesChange={setNotes}
                   readOnly={isFromTimestampUrl}
                 />
               </Suspense>

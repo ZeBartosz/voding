@@ -1,8 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import type { Video } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
-export const useLink = (currentTitle: string | null) => {
+export const useLink = (
+  currentTitle: string | null,
+  setIsFromTimestampUrl: Dispatch<SetStateAction<boolean>>,
+) => {
   const [video, setVideo] = useState<Video | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -150,6 +160,33 @@ export const useLink = (currentTitle: string | null) => {
     [validateAndCleanUrl, currentTitle, video],
   );
 
+  const handleHash = useCallback(() => {
+    try {
+      const raw = window.location.hash || "";
+      if (!raw) return;
+      const hash = raw.replace(/^#/, "");
+      const params = new URLSearchParams(hash);
+      const v = params.get("v");
+      const t = params.get("t");
+      if (!v) return;
+      const videoUrl = decodeURIComponent(v);
+      setIsFromTimestampUrl(true);
+      const time = t ? Number(t) : NaN;
+      const loaded = loadVideoFromUrl(videoUrl);
+
+      if (!Number.isNaN(time) && typeof handleNoteJump === "function") {
+        setTimeout(
+          () => {
+            handleNoteJump(time);
+          },
+          loaded ? 300 : 500,
+        );
+      }
+    } catch {
+      //
+    }
+  }, [loadVideoFromUrl, handleNoteJump, setIsFromTimestampUrl]);
+
   useEffect(() => {
     if (!currentTitle) return;
     requestAnimationFrame(() => {
@@ -176,5 +213,6 @@ export const useLink = (currentTitle: string | null) => {
     handleNoteJump,
     loadVideoFromUrl,
     handleUpdateVideoName,
+    handleHash,
   };
 };

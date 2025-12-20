@@ -7,8 +7,6 @@ interface TopbarProps {
   exporting: boolean;
   handleExport: () => void;
   handleNewSession: () => void;
-  savedStyle?: React.CSSProperties;
-  rightControlsStyle?: React.CSSProperties;
 }
 
 const Topbar = ({
@@ -17,8 +15,6 @@ const Topbar = ({
   exporting,
   handleExport,
   handleNewSession,
-  savedStyle,
-  rightControlsStyle,
 }: TopbarProps) => {
   return (
     <div className="topbar">
@@ -47,11 +43,18 @@ const Topbar = ({
       {video && (
         <div className="topbar-right">
           {lastSavedAt && (
-            <div style={savedStyle}>
+            <div style={{ fontSize: 12, color: "#666" }}>
               Saved {new Date(lastSavedAt).toLocaleTimeString()}
             </div>
           )}
-          <div style={rightControlsStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginLeft: 12,
+              gap: 12,
+            }}
+          >
             <button
               disabled={exporting}
               className="btn btn-ghost"
