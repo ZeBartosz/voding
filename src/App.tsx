@@ -72,13 +72,7 @@ function App() {
     [video?.name, video?.url, currentTitle, notes],
   );
 
-  const { exporting, exportPdf } = useExportPdf(exportOptions);
-
-  const handleExport = useCallback(() => {
-    setTimeout(() => {
-      exportPdf();
-    }, 0);
-  }, [exportPdf]);
+  const { exporting, handleExport } = useExportPdf(exportOptions);
 
   useEffect(() => {
     const run = () => requestAnimationFrame(handleHash);

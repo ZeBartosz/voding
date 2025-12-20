@@ -142,5 +142,11 @@ export default function useExportPdf({
     }
   }, [title, videoUrl, notes, filename]);
 
-  return { exporting, exportPdf };
+  const handleExport = useCallback(() => {
+    setTimeout(() => {
+      exportPdf();
+    }, 0);
+  }, [exportPdf]);
+
+  return { exporting, handleExport };
 }
