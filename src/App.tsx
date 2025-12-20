@@ -17,6 +17,7 @@ import { useVideoMetaData } from "./hooks/useVideoMetaData";
 import useExportPdf from "./hooks/useExportPdf";
 import { useNotes } from "./hooks/useNotes";
 import useNotesAutosave from "./hooks/useNotesAutosave";
+import Topbar from "./components/Topbar";
 
 const ResultBox = lazy(() => import("./components/Notes"));
 
@@ -199,51 +200,15 @@ function App() {
 
   return (
     <div className="container">
-      <div className="topbar">
-        <div className="brand">
-          <div
-            className="brand-badge"
-            onClick={handleNewSession}
-            style={{ cursor: "pointer" }}
-            title="Start new session"
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                handleNewSession();
-              }
-            }}
-          >
-            V
-          </div>
-          <div className="brand-title">
-            <div className="title">{video?.name ?? "VOD Review Session"}</div>
-            <div className="subtitle">Competitive Analysis</div>
-          </div>
-        </div>
-
-        {video && (
-          <div className="topbar-right">
-            {lastSavedAt && (
-              <div style={savedStyle}>
-                Saved {new Date(lastSavedAt).toLocaleTimeString()}
-              </div>
-            )}
-            <div style={rightControlsStyle}>
-              <button
-                onClick={handleExport}
-                disabled={exporting}
-                className="btn btn-ghost"
-                aria-label="Export notes"
-                title="Export notes to PDF"
-                type="button"
-              >
-                {exporting ? "Exporting…" : "Export"}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <Topbar
+        video={video}
+        lastSavedAt={lastSavedAt}
+        exporting={exporting}
+        handleExport={handleExport}
+        handleNewSession={handleNewSession}
+        savedStyle={savedStyle}
+        rightControlsStyle={rightControlsStyle}
+      />
 
       <div className="main">
         <div className="video-column">
