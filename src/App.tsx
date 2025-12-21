@@ -154,6 +154,7 @@ function App() {
         exporting={exporting}
         handleExport={handleExport}
         handleNewSession={handleNewSession}
+        currentTitle={currentTitle}
       />
 
       <div className="main">

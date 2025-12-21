@@ -1,5 +1,6 @@
 import { memo } from "react";
 import type { Video } from "../types";
+import Skeleton from "./ui/skeleton";
 
 interface TopbarProps {
   video: Video | null;
@@ -7,6 +8,7 @@ interface TopbarProps {
   exporting: boolean;
   handleExport: () => void;
   handleNewSession: () => void;
+  currentTitle: string | null;
 }
 
 const Topbar = ({
@@ -15,6 +17,7 @@ const Topbar = ({
   exporting,
   handleExport,
   handleNewSession,
+  currentTitle,
 }: TopbarProps) => {
   return (
     <div className="topbar">
@@ -35,7 +38,11 @@ const Topbar = ({
           V
         </div>
         <div className="brand-title">
-          <div className="title">{video?.name ?? "VOD Review Session"}</div>
+          <div className="title">
+            {currentTitle
+              ? (video?.name ?? <Skeleton height={16} />)
+              : "VOD Review Session"}
+          </div>
           <div className="subtitle">Competitive Analysis</div>
         </div>
       </div>
