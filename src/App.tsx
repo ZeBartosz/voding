@@ -75,11 +75,10 @@ function App() {
   const { exporting, handleExport } = useExportPdf(exportOptions);
 
   useEffect(() => {
-    const run = () => requestAnimationFrame(handleHash);
-    run();
-    window.addEventListener("hashchange", run);
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
     return () => {
-      window.removeEventListener("hashchange", run);
+      window.removeEventListener("hashchange", handleHash);
     };
   }, [handleHash]);
 

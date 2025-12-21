@@ -79,15 +79,13 @@ export const useLink = (
       }
 
       setError("");
-
-      const newVideo: Video = {
+      setVideo({
         id: uuidv4(),
         url: cleanUrl,
         name: currentTitle ?? "Untitled",
         addedAt: new Date().toISOString(),
         provider: "youtube",
-      };
-      setVideo(newVideo);
+      });
     },
     [inputValue, validateAndCleanUrl, currentTitle],
   );
@@ -145,15 +143,13 @@ export const useLink = (
         return false;
       }
 
-      const newVideo: Video = {
+      setVideo({
         id: uuidv4(),
         url: cleanUrl,
         name: name ?? currentTitle ?? "Untitled",
         addedAt: new Date().toISOString(),
         provider: "youtube",
-      };
-
-      setVideo(newVideo);
+      });
       setInputValue(cleanUrl);
       return true;
     },
