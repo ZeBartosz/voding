@@ -16,7 +16,7 @@ export const useLink = (
   const [video, setVideo] = useState<Video | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [error, setError] = useState<string>("");
-
+  const jumpTimeoutRef = useRef<number | null>(null);
   const playerRef = useRef<HTMLVideoElement | null>(null);
   const [focus, setFocus] = useState({ x: 0.5, y: 0.5 });
   const [scale, setScale] = useState(1);
@@ -33,6 +33,15 @@ export const useLink = (
     el.style.willChange = "transform";
     el.style.transition = "transform 250ms ease";
   }, [focus, scale]);
+
+  useEffect(() => {
+    return () => {
+      if (jumpTimeoutRef.current) {
+        clearTimeout(jumpTimeoutRef.current);
+        jumpTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const extractYouTubeId = useCallback((url: string): string | null => {
     try {
@@ -170,9 +179,12 @@ export const useLink = (
       const time = t ? Number(t) : NaN;
       const loaded = loadVideoFromUrl(videoUrl);
 
-      if (!Number.isNaN(time) && typeof handleNoteJump === "function") {
-        setTimeout(
+      if (!Number.isNaN(time)) {
+        if (jumpTimeoutRef.current) clearTimeout(jumpTimeoutRef.current);
+
+        jumpTimeoutRef.current = setTimeout(
           () => {
+            jumpTimeoutRef.current = null;
             handleNoteJump(time);
           },
           loaded ? 300 : 500,

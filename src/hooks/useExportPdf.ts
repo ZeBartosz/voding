@@ -153,6 +153,8 @@ export default function useExportPdf({
   }, [title, videoUrl, notes, filename]);
 
   const handleExport = useCallback(() => {
+    if (exportingRef.current) return;
+
     exportTimeoutRef.current = setTimeout(() => {
       exportTimeoutRef.current = null;
       exportPdf();
