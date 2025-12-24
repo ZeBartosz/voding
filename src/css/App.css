@@ -205,6 +205,7 @@ body,
 .sidebar .sidebar-header {
     display: flex;
     align-items: center;
+    padding: 1px;
     justify-content: space-between;
     gap: 8px;
 }
@@ -227,6 +228,7 @@ body,
     flex: 1 1 auto;
     min-width: 0;
     min-height: 0;
+    padding: 1px;
     overflow: hidden;
     position: relative;
 }
@@ -405,6 +407,7 @@ body,
     margin-top: auto;
     display: flex;
     flex-direction: column;
+    border-top: solid 2px rgb(184, 46, 46);
     gap: 10px;
     padding-top: 8px;
 }
@@ -417,6 +420,7 @@ body,
     border-radius: 8px;
     padding: 12px;
     background: #0b1315;
+
     border: 1px solid rgba(255, 255, 255, 0.04);
     color: var(--text);
     box-sizing: border-box;
