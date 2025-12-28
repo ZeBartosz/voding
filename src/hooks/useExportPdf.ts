@@ -74,7 +74,7 @@ export default function useExportPdf({
       const exportedAt = new Date().toLocaleString();
       const videoMeta = videoUrl ? " • Video: " + videoUrl : "";
 
-      // Build a shareable link (video + notes) and include it under the title
+      // Build a shareable link (video + notes) and include a short label under the title.
       let shareableLink = "";
       try {
         if (videoUrl) {
@@ -89,19 +89,22 @@ export default function useExportPdf({
       y += 14;
 
       if (shareableLink) {
-        // smaller font & blue color for the link display
+        // smaller font & blue color for the link label
         const prevFontSize = doc.getFontSize();
         doc.setFontSize(10);
         doc.setTextColor(0, 102, 204);
-        // Print the link line
-        doc.text("Shared link: " + shareableLink, marginLeft, y);
+
+        // Short label instead of printing full URL
+        const label = "Shared session — Open link";
+        doc.text(label, marginLeft, y);
         try {
-          // Add clickable link area covering most of the line
-          const linkWidth = Math.min(maxWidth, pageWidth - marginLeft * 2);
-          doc.link(marginLeft, y - 10, linkWidth, 12, { url: shareableLink });
+          // Attach a clickable link area only over the label text
+          const w = doc.getTextWidth(label);
+          doc.link(marginLeft, y - 10, w, 12, { url: shareableLink });
         } catch {
           // ignore link attachment errors
         }
+
         // restore styling
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(prevFontSize);
