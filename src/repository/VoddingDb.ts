@@ -40,46 +40,46 @@ export const saveVod = async (data: VoddingPayload): Promise<VoddingPayload> => 
   const db = await getDB();
   const videoId = data.video.id;
 
-  const existingStation = await db.getFromIndex("vodding", "by-videoId", videoId);
+  const existingVodding = await db.getFromIndex("vodding", "by-videoId", videoId);
 
-  if (existingStation) {
-    const updatedStation: VoddingPayload = {
-      ...existingStation,
+  if (existingVodding) {
+    const updatedVodding: VoddingPayload = {
+      ...existingVodding,
       ...data,
-      id: existingStation.id,
-      createdAt: existingStation.createdAt,
+      id: existingVodding.id,
+      createdAt: existingVodding.createdAt,
       updatedAt: new Date().toISOString(),
     };
 
-    await db.put("vodding", updatedStation);
-    return updatedStation;
+    await db.put("vodding", updatedVodding);
+    return updatedVodding;
   } else {
     const currentDBArray = (await db.getAll("vodding")).sort(
       (a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt),
     );
 
     if (currentDBArray.length > MAX_VODS) {
-      const oldestStation = currentDBArray[0];
-      await db.delete("vodding", oldestStation.id);
+      const oldestVodding = currentDBArray[0];
+      await db.delete("vodding", oldestVodding.id);
     }
 
-    const newStation: VoddingPayload = {
+    const newVodding: VoddingPayload = {
       ...data,
       id: uuidV4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    await db.put("vodding", newStation);
-    return newStation;
+    await db.put("vodding", newVodding);
+    return newVodding;
   }
 };
 
 export const deleteVod = async (videoId: string) => {
   const db = await getDB();
-  const existingStation = await db.getFromIndex("vodding", "by-videoId", videoId);
+  const existingVodding = await db.getFromIndex("vodding", "by-videoId", videoId);
 
-  if (existingStation) {
-    await db.delete("vodding", existingStation.id);
+  if (existingVodding) {
+    await db.delete("vodding", existingVodding.id);
   }
 };
