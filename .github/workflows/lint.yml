@@ -1,4 +1,4 @@
-name: linter
+name: lint
 
 on:
   push:
@@ -28,5 +28,8 @@ jobs:
       - name: Format (check)
         run: bun run format:check
 
-      - name: Lint (type-aware)
-        run: bun run lint:type-aware
+      - name: Lint (strict)
+        run: bun run lint:strict
+
+      - name: Lint CSS
+        run: bun run lint:css

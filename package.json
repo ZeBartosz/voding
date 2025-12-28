@@ -10,13 +10,14 @@
     "build:preview": "bun run build && bun run preview",
     "lint": "bun oxlint .",
     "lint:fix": "bun oxlint . --fix",
-    "lint:type-aware": "bun oxlint . --type-aware --type-check",
-    "lint:type-aware:fix": "bun oxlint . --type-aware --type-check --fix",
+    "lint:strict": "bun oxlint . --type-aware --type-check",
+    "lint:strict:fix": "bun oxlint . --type-aware --type-check --fix",
     "lint:css": "stylelint \"**/*.{css,scss}\"",
     "lint:css:fix": "stylelint \"**/*.{css,scss}\" --fix",
     "format": "bun oxfmt",
     "format:check": "bun oxfmt --check",
-    "check": "bun run format:check && bun run lint:type-aware && bun run lint:css"
+    "check": "bun run format:check && bun run lint:strict && bun run lint:css",
+    "fix": "bun run format && bun run lint:fix && bun run lint:strict:fix && bun run lint:css:fix"
   },
   "dependencies": {
     "idb": "^8.0.3",
