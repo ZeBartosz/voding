@@ -1,7 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Send, Edit, Trash, Clock } from "lucide-react";
 import type { Note } from "../types";
+import { getNotesFromUrl } from "../hooks/useUrlSync";
 
 interface NotesProps {
   currentTime: RefObject<number>;
@@ -39,7 +47,18 @@ const Notes: React.FC<NotesProps> = ({
 }) => {
   const controlled = typeof onNotesChange === "function";
 
-  const [internalNotes, setInternalNotes] = useState<Note[]>(initialNotes ?? []);
+  const urlNotes: Note[] = (() => {
+    try {
+      return getNotesFromUrl() ?? [];
+    } catch {
+      return [];
+    }
+  })();
+  const inputsReadOnly = readOnly || urlNotes.length > 0;
+
+  const [internalNotes, setInternalNotes] = useState<Note[]>(
+    initialNotes ?? [],
+  );
 
   useEffect(() => {
     if (initialNotes == null) return;
@@ -62,8 +81,13 @@ const Notes: React.FC<NotesProps> = ({
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const notes: Note[] = useMemo<Note[]>(
-    () => (controlled ? (initialNotes ?? []) : internalNotes),
-    [controlled, initialNotes, internalNotes],
+    () =>
+      urlNotes && urlNotes.length > 0
+        ? urlNotes
+        : controlled
+          ? (initialNotes ?? [])
+          : internalNotes,
+    [urlNotes, controlled, initialNotes, internalNotes],
   );
 
   const notify = useCallback(
@@ -78,11 +102,12 @@ const Notes: React.FC<NotesProps> = ({
   );
 
   const addNote = useCallback(() => {
-    if (readOnly) return;
+    if (inputsReadOnly) return;
     const text = inputValue.trim();
     if (!text) return;
 
-    const timestamp = typeof currentTime.current === "number" ? currentTime.current : 0;
+    const timestamp =
+      typeof currentTime.current === "number" ? currentTime.current : 0;
 
     const newNote: Note = {
       id: uuidv4(),
@@ -99,28 +124,30 @@ const Notes: React.FC<NotesProps> = ({
       const el = resultsRef.current;
       if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     });
-  }, [inputValue, currentTime, notes, notify, readOnly]);
+  }, [inputValue, currentTime, notes, notify, inputsReadOnly]);
 
   const deleteNote = useCallback(
     (id: string) => {
-      if (readOnly) return;
+      if (inputsReadOnly) return;
       const next = notes.filter((n) => n.id !== id);
       notify(next);
     },
-    [notes, notify, readOnly],
+    [notes, notify, inputsReadOnly],
   );
 
   const saveEdit = useCallback(
     (id: string, newContent: string) => {
-      if (readOnly) return;
+      if (inputsReadOnly) return;
       const next = notes.map((n) =>
-        n.id === id ? { ...n, content: newContent, updatedAt: new Date().toISOString() } : n,
+        n.id === id
+          ? { ...n, content: newContent, updatedAt: new Date().toISOString() }
+          : n,
       );
       notify(next);
       setEditingId(null);
       setEditingValue("");
     },
-    [notes, notify, readOnly],
+    [notes, notify, inputsReadOnly],
   );
 
   const handleKeyDown = useCallback(
@@ -136,7 +163,8 @@ const Notes: React.FC<NotesProps> = ({
         }
         const start = el.selectionStart;
         const end = el.selectionEnd;
-        const newValue = inputValue.slice(0, start) + "\n" + inputValue.slice(end);
+        const newValue =
+          inputValue.slice(0, start) + "\n" + inputValue.slice(end);
         setInputValue(newValue);
         requestAnimationFrame(() => {
           const t = textareaRef.current;
@@ -155,7 +183,9 @@ const Notes: React.FC<NotesProps> = ({
     if (!query) return notes;
     const q = query.toLowerCase().trim();
     return notes.filter(
-      (n) => n.content.toLowerCase().includes(q) || formatTime(n.timestamp).includes(q),
+      (n) =>
+        n.content.toLowerCase().includes(q) ||
+        formatTime(n.timestamp).includes(q),
     );
   }, [notes, query]);
 
@@ -193,7 +223,11 @@ const Notes: React.FC<NotesProps> = ({
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M11 6H13V12H11V6Z" fill="currentColor" opacity="0.85" />
+                <path
+                  d="M11 6H13V12H11V6Z"
+                  fill="currentColor"
+                  opacity="0.85"
+                />
                 <path
                   d="M12 17.25C10.481 17.25 9.25 16.019 9.25 14.5C9.25 12.981 10.481 11.75 12 11.75C13.519 11.75 14.75 12.981 14.75 14.5C14.75 16.019 13.519 17.25 12 17.25Z"
                   fill="currentColor"
@@ -207,7 +241,7 @@ const Notes: React.FC<NotesProps> = ({
             <div className="empty-sub">
               {query
                 ? "Try changing or clearing your search."
-                : readOnly
+                : inputsReadOnly
                   ? "This session is read-only."
                   : "Add your first note below"}
             </div>
@@ -216,11 +250,15 @@ const Notes: React.FC<NotesProps> = ({
           filtered.map((n) => {
             const isEditing = editingId === n.id;
             return (
-              <div key={n.id} className={`result-card ${isEditing ? "editing" : ""}`}>
+              <div
+                key={n.id}
+                className={`result-card ${isEditing ? "editing" : ""}`}
+              >
                 <div className="result-card-header">
                   <div className="result-meta">
                     <span className="timestamp">
-                      <Clock size={12} className="timestamp-icon" /> {formatTime(n.timestamp)}
+                      <Clock size={12} className="timestamp-icon" />{" "}
+                      {formatTime(n.timestamp)}
                     </span>
                   </div>
 
@@ -236,7 +274,7 @@ const Notes: React.FC<NotesProps> = ({
                       <Send size={16} />
                     </button>
 
-                    {!isEditing && !readOnly && (
+                    {!isEditing && !inputsReadOnly && (
                       <button
                         onClick={() => {
                           setEditingId(n.id);
@@ -250,17 +288,18 @@ const Notes: React.FC<NotesProps> = ({
                       </button>
                     )}
 
-                    <button
-                      onClick={() => {
-                        deleteNote(n.id);
-                      }}
-                      aria-label="Delete note"
-                      className="btn has-tooltip"
-                      disabled={readOnly}
-                      data-tooltip="Delete"
-                    >
-                      <Trash size={16} className="text-red-600" />
-                    </button>
+                    {!inputsReadOnly && (
+                      <button
+                        onClick={() => {
+                          deleteNote(n.id);
+                        }}
+                        aria-label="Delete note"
+                        className="btn has-tooltip"
+                        data-tooltip="Delete"
+                      >
+                        <Trash size={16} className="text-red-600" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -271,7 +310,7 @@ const Notes: React.FC<NotesProps> = ({
                         autoFocus
                         className="note-edit-textarea"
                         value={editingValue}
-                        readOnly={readOnly}
+                        readOnly={inputsReadOnly}
                         onChange={(e) => {
                           setEditingValue(e.target.value);
                         }}
@@ -282,8 +321,12 @@ const Notes: React.FC<NotesProps> = ({
                             saveEdit(n.id, editingValue);
                           }}
                           className="btn btn-primary"
-                          disabled={readOnly}
-                          title={readOnly ? "Disabled in read-only view" : undefined}
+                          disabled={inputsReadOnly}
+                          title={
+                            inputsReadOnly
+                              ? "Disabled in read-only view"
+                              : undefined
+                          }
                         >
                           Save
                         </button>
@@ -309,17 +352,21 @@ const Notes: React.FC<NotesProps> = ({
       </div>
 
       <div className="input-box">
-        <textarea
-          ref={textareaRef}
-          value={inputValue}
-          readOnly={readOnly}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-          }}
-          placeholder={readOnly ? "Read-only session" : "Write your observation..."}
-          onKeyDown={handleKeyDown}
-          className="input-textarea"
-        />
+        <div className="textarea-wrapper">
+          <textarea
+            ref={textareaRef}
+            value={inputValue}
+            readOnly={inputsReadOnly}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+            }}
+            placeholder={
+              inputsReadOnly ? "Read-only session" : "Write your observation..."
+            }
+            onKeyDown={handleKeyDown}
+            className={`input-textarea ${inputsReadOnly ? "input-textarea-readonly" : ""}`}
+          />
+        </div>
         <div className="button-box">
           <div>
             <button
@@ -329,7 +376,11 @@ const Notes: React.FC<NotesProps> = ({
             >
               Reset
             </button>
-            <button onClick={handleMapView} aria-label="Map View" className="btn btn-ghost">
+            <button
+              onClick={handleMapView}
+              aria-label="Map View"
+              className="btn btn-ghost"
+            >
               Map View
             </button>
           </div>
@@ -338,10 +389,14 @@ const Notes: React.FC<NotesProps> = ({
               addNote();
             }}
             className="btn btn-primary"
-            disabled={readOnly}
-            title={readOnly ? "Adding notes is disabled in read-only view" : undefined}
+            disabled={inputsReadOnly}
+            title={
+              inputsReadOnly
+                ? "Save this VOD to your session to add notes"
+                : undefined
+            }
           >
-            {readOnly ? "Read-only" : "+ Add Note"}
+            {inputsReadOnly ? "Read-only" : "+ Add Note"}
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import type { Video } from "../types";
 import Skeleton from "./ui/skeleton";
 
@@ -9,6 +9,7 @@ interface TopbarProps {
   handleExport: () => void;
   handleNewSession: () => void;
   currentTitle: string | null;
+  onCopyShareableUrl?: () => Promise<boolean>;
 }
 
 const Topbar = ({
@@ -18,7 +19,42 @@ const Topbar = ({
   handleExport,
   handleNewSession,
   currentTitle,
+  onCopyShareableUrl,
 }: TopbarProps) => {
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
+
+  const handleShare = useCallback(async () => {
+    if (!onCopyShareableUrl) return;
+
+    try {
+      const success = await onCopyShareableUrl();
+      setCopyStatus(success ? "copied" : "error");
+
+      // Reset status after 2 seconds
+      setTimeout(() => {
+        setCopyStatus("idle");
+      }, 2000);
+    } catch {
+      setCopyStatus("error");
+      setTimeout(() => {
+        setCopyStatus("idle");
+      }, 2000);
+    }
+  }, [onCopyShareableUrl]);
+
+  const getShareButtonText = () => {
+    switch (copyStatus) {
+      case "copied":
+        return "Copied!";
+      case "error":
+        return "Failed";
+      default:
+        return "Share";
+    }
+  };
+
   return (
     <header className="topbar">
       <div className="brand">
@@ -38,7 +74,9 @@ const Topbar = ({
         </div>
         <div className="brand-title">
           <div className="title">
-            {currentTitle ? (video?.name ?? <Skeleton height={16} />) : "VOD Review Session"}
+            {currentTitle
+              ? (video?.name ?? <Skeleton height={16} />)
+              : "VOD Review Session"}
           </div>
           <div className="subtitle">Competitive Analysis</div>
         </div>
@@ -73,6 +111,47 @@ const Topbar = ({
                 <path d="M12 5v14M5 12h14" />
               </svg>
               New VOD
+            </button>
+            <button
+              onClick={handleShare}
+              disabled={exporting || copyStatus !== "idle"}
+              className={`topbar-btn ${copyStatus === "copied" ? "topbar-btn-success" : ""}`}
+              aria-label="Copy shareable link"
+              title="Copy shareable link with notes"
+              type="button"
+            >
+              {copyStatus === "copied" ? (
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              )}
+              {getShareButtonText()}
             </button>
             <button
               onClick={handleExport}

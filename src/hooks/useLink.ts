@@ -6,8 +6,9 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { Video } from "../types";
+import type { Note, Video } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { parseHashParams } from "../utils/urlParams";
 
 export const useLink = (
   currentTitle: string | null,
@@ -16,6 +17,7 @@ export const useLink = (
   const [video, setVideo] = useState<Video | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [urlNotes, setUrlNotes] = useState<Note[]>([]);
   const jumpTimeoutRef = useRef<number | null>(null);
   const playerRef = useRef<HTMLVideoElement | null>(null);
   const [focus, setFocus] = useState({ x: 0.5, y: 0.5 });
@@ -165,25 +167,33 @@ export const useLink = (
 
   const handleHash = useCallback(() => {
     try {
-      const raw = window.location.hash || "";
-      if (!raw) return;
-      const hash = raw.replace(/^#/, "");
-      const params = new URLSearchParams(hash);
-      const v = params.get("v");
-      const t = params.get("t");
-      if (!v) return;
-      const videoUrl = decodeURIComponent(v);
-      setIsFromTimestampUrl(true);
-      const time = t ? Number(t) : NaN;
+      const { videoUrl, timestamp, notes } = parseHashParams();
+
+      if (!videoUrl) return;
+
+      // If we have notes from URL, this is a shared session (read-only)
+      const hasUrlNotes = notes.length > 0;
+      const hasTimestamp = timestamp !== null && !Number.isNaN(timestamp);
+
+      // Set read-only mode if we have notes or timestamp from URL
+      if (hasUrlNotes || hasTimestamp) {
+        setIsFromTimestampUrl(true);
+      }
+
+      // Store notes from URL
+      if (hasUrlNotes) {
+        setUrlNotes(notes);
+      }
+
       const loaded = loadVideoFromUrl(videoUrl);
 
-      if (!Number.isNaN(time)) {
+      if (hasTimestamp) {
         if (jumpTimeoutRef.current) clearTimeout(jumpTimeoutRef.current);
 
         jumpTimeoutRef.current = setTimeout(
           () => {
             jumpTimeoutRef.current = null;
-            handleNoteJump(time);
+            handleNoteJump(timestamp);
           },
           loaded ? 300 : 500,
         );
@@ -192,6 +202,10 @@ export const useLink = (
       //
     }
   }, [loadVideoFromUrl, handleNoteJump, setIsFromTimestampUrl]);
+
+  const clearUrlNotes = useCallback(() => {
+    setUrlNotes([]);
+  }, []);
 
   useEffect(() => {
     if (!currentTitle) return;
@@ -220,5 +234,7 @@ export const useLink = (
     loadVideoFromUrl,
     handleUpdateVideoName,
     handleHash,
+    urlNotes,
+    clearUrlNotes,
   };
 };
