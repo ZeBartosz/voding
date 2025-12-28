@@ -36,27 +36,35 @@ export default function useNotesAutosave({
       const currentVideo = video ?? vodding?.video;
       if (!currentVideo) return;
 
+      const now = new Date().toISOString();
+
       if (!vodding && !draftMetaRef.current) {
-        draftMetaRef.current = {
-          id: uuidv4(),
-          createdAt: new Date().toISOString(),
-        };
+        draftMetaRef.current = { id: uuidv4(), createdAt: now };
       }
 
-      const payload = vodding
-        ? {
-            ...vodding,
-            video: video ?? vodding.video,
-            notes,
-            updatedAt: new Date().toISOString(),
-          }
-        : {
-            id: draftMetaRef.current!.id,
-            createdAt: draftMetaRef.current!.createdAt,
-            updatedAt: new Date().toISOString(),
-            video: currentVideo,
-            notes,
-          };
+      if (!vodding) {
+        const draftMeta = draftMetaRef.current;
+        if (!draftMeta) return;
+
+        const payload = {
+          id: draftMeta.id,
+          createdAt: draftMeta.createdAt,
+          updatedAt: now,
+          video: currentVideo,
+          notes,
+        };
+
+        await save(payload);
+        setLastSavedAt(now);
+        return;
+      }
+
+      const payload = {
+        ...vodding,
+        video: video ?? vodding.video,
+        notes,
+        updatedAt: now,
+      };
 
       await save(payload);
       setLastSavedAt(new Date().toISOString());
