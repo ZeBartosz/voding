@@ -112,8 +112,7 @@
 }
 
 /* SVG icon alignment within action buttons */
-.result-actions-row .btn svg,
-.result-card .result-actions-row .btn svg {
+.result-actions-row .btn svg {
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -121,14 +120,67 @@
 }
 
 /* Red color for delete/trash icon */
-.result-actions-row .btn .text-red-600,
-.result-card .result-actions-row .btn .text-red-600 {
+.result-actions-row .btn .text-red-600 {
   color: rgb(184 46 46 / 80%);
   transition: color 150ms ease;
 }
 
 /* Brighter red on hover for delete icon */
-.result-actions-row .btn:hover .text-red-600,
+.result-actions-row .btn:hover .text-red-600 {
+  color: #d04343;
+}
+
+/* Action buttons in result card context */
+.result-card .result-actions-row .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 6px 8px;
+  color: rgb(255 255 255 / 50%);
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  transition:
+    background-color 150ms ease,
+    transform 120ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover state for result card action buttons */
+.result-card .result-actions-row .btn:hover {
+  color: rgb(255 255 255 / 80%);
+  background: rgb(255 255 255 / 6%);
+  border-color: rgb(255 255 255 / 10%);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
+  transform: translateY(-2px);
+}
+
+/* Focus state for result card action buttons */
+.result-card .result-actions-row .btn:focus {
+  outline: none;
+  border-color: rgb(184 46 46 / 40%);
+  box-shadow: 0 0 0 3px rgb(184 46 46 / 12%);
+}
+
+/* SVG icon alignment within result card action buttons */
+.result-card .result-actions-row .btn svg {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+/* Red color for result card delete/trash icon */
+.result-card .result-actions-row .btn .text-red-600 {
+  color: rgb(184 46 46 / 80%);
+  transition: color 150ms ease;
+}
+
+/* Brighter red on hover for result card delete icon */
 .result-card .result-actions-row .btn:hover .text-red-600 {
   color: #d04343;
 }
