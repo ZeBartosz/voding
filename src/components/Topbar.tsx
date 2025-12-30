@@ -174,9 +174,8 @@ const Topbar = ({
               New VOD
             </button>
 
-            {/* Copy shareable link */}
             <button
-              onClick={handleShare}
+              onClick={() => void handleShare()}
               disabled={exporting || copyStatus !== "idle"}
               className={`topbar-btn ${copyStatus === "copied" ? "topbar-btn-success" : ""}`}
               aria-label="Copy shareable link"
@@ -219,9 +218,8 @@ const Topbar = ({
 
             {onSaveShared && (
               <>
-                {/* Save shared session into client's session/store */}
                 <button
-                  onClick={handleSaveShared}
+                  onClick={() => void handleSaveShared()}
                   disabled={exporting || saveStatus !== "idle"}
                   className={`topbar-btn ${saveStatus === "saved" ? "topbar-btn-success" : ""}`}
                   aria-label="Save shared session"
