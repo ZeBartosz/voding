@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { Video } from "../types";
 import Skeleton from "./ui/skeleton";
 
@@ -34,21 +34,37 @@ const Topbar = ({
     "idle",
   );
 
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, []);
+
   const handleShare = useCallback(async () => {
     if (!onCopyShareableUrl) return;
+
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
 
     try {
       const success = await onCopyShareableUrl();
       setCopyStatus(success ? "copied" : "error");
 
-      // Reset status after 2 seconds
-      setTimeout(() => {
+      copyTimeoutRef.current = setTimeout(() => {
         setCopyStatus("idle");
+        copyTimeoutRef.current = null;
       }, 2000);
     } catch {
       setCopyStatus("error");
-      setTimeout(() => {
+      copyTimeoutRef.current = setTimeout(() => {
         setCopyStatus("idle");
+        copyTimeoutRef.current = null;
       }, 2000);
     }
   }, [onCopyShareableUrl]);
@@ -56,18 +72,24 @@ const Topbar = ({
   const handleSaveShared = useCallback(async () => {
     if (!onSaveShared) return;
 
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+
     try {
       const success = await onSaveShared();
       setSaveStatus(success ? "saved" : "error");
 
-      // Reset status after 2 seconds
-      setTimeout(() => {
+      saveTimeoutRef.current = setTimeout(() => {
         setSaveStatus("idle");
+        saveTimeoutRef.current = null;
       }, 2000);
     } catch {
       setSaveStatus("error");
-      setTimeout(() => {
+      saveTimeoutRef.current = setTimeout(() => {
         setSaveStatus("idle");
+        saveTimeoutRef.current = null;
       }, 2000);
     }
   }, [onSaveShared]);
