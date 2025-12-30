@@ -11,29 +11,11 @@ interface UseUrlSyncOptions {
 }
 
 interface UseUrlSyncReturn {
-  /**
-   * Manually trigger URL update (useful after specific actions)
-   */
   syncToUrl: () => void;
-  /**
-   * Get the current shareable URL
-   */
   getShareableUrl: () => string;
-  /**
-   * Copy shareable URL to clipboard
-   */
   copyShareableUrl: () => Promise<boolean>;
 }
 
-/**
- * Hook to synchronize video and notes state with URL hash params.
- *
- * When a user pastes a video URL and adds notes, the URL is updated with:
- * - `v` param: the video URL (encoded)
- * - `n` param: the notes (base64 encoded JSON)
- *
- * When someone opens a shared URL, they can see the video and notes in read-only mode.
- */
 export function useUrlSync({
   video,
   notes,
@@ -42,12 +24,14 @@ export function useUrlSync({
 }: UseUrlSyncOptions): UseUrlSyncReturn {
   const updateTimeoutRef = useRef<number | null>(null);
   const lastVideoUrlRef = useRef<string | null>(null);
-  const lastNotesLengthRef = useRef<number>(0);
+  const lastNotesHashRef = useRef<string>("");
 
-  // Sync state to URL with debouncing
+  const getNotesHash = (notes: Note[]) => {
+    return JSON.stringify(notes.map((n) => ({ t: n.timestamp, c: n.content })));
+  };
+
   const syncToUrl = useCallback(() => {
     if (isFromTimestampUrl) {
-      // Don't update URL in read-only mode
       return;
     }
 
@@ -55,41 +39,34 @@ export function useUrlSync({
     updateUrlHash(videoUrl, notes);
   }, [video?.url, notes, isFromTimestampUrl]);
 
-  // Debounced sync effect
   useEffect(() => {
     if (isFromTimestampUrl) {
-      // Don't sync in read-only mode
       return;
     }
 
     const videoUrl = video?.url ?? null;
-    const notesLength = notes.length;
+    const notesHash = getNotesHash(notes);
 
-    // Check if anything actually changed
     const videoChanged = videoUrl !== lastVideoUrlRef.current;
-    const notesChanged = notesLength !== lastNotesLengthRef.current;
+    const notesChanged = notesHash !== lastNotesHashRef.current;
 
     if (!videoChanged && !notesChanged) {
       return;
     }
 
-    // Update refs
     lastVideoUrlRef.current = videoUrl;
-    lastNotesLengthRef.current = notesLength;
+    lastNotesHashRef.current = notesHash;
 
-    // Clear existing timeout
     if (updateTimeoutRef.current) {
       window.clearTimeout(updateTimeoutRef.current);
       updateTimeoutRef.current = null;
     }
 
-    // If video just loaded, update immediately
     if (videoChanged && videoUrl) {
       syncToUrl();
       return;
     }
 
-    // Debounce notes updates to avoid too many URL changes
     updateTimeoutRef.current = window.setTimeout(() => {
       syncToUrl();
       updateTimeoutRef.current = null;
@@ -103,7 +80,6 @@ export function useUrlSync({
     };
   }, [video?.url, notes, isFromTimestampUrl, debounceMs, syncToUrl]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (updateTimeoutRef.current) {
@@ -151,10 +127,6 @@ export function useUrlSync({
   };
 }
 
-/**
- * Parse notes from current URL hash params
- * This is a convenience export for components that need to read URL state
- */
 export function getNotesFromUrl(): Note[] {
   const { notes } = parseHashParams();
   return notes;
