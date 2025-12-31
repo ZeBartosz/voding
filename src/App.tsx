@@ -109,9 +109,10 @@ function App() {
         setVideo(payload.video);
         setIsFromTimestampUrl(false);
         clearUrlNotes();
+        return true;
       }
 
-      return true;
+      return false;
     } catch {
       return false;
     } finally {
