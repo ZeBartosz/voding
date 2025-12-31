@@ -228,8 +228,6 @@ function App() {
     setVodding,
   ]);
 
-  console.log("rerender");
-
   return (
     <div className="container">
       <Topbar
