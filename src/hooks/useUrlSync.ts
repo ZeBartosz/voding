@@ -134,7 +134,7 @@ export function getNotesFromUrl(): Note[] {
   return notes;
 }
 
-export function getShardState(): boolean {
+export function getSharedState(): boolean {
   const { shared } = parseHashParams();
   return shared;
 }
