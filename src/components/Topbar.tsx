@@ -112,6 +112,8 @@ const Topbar = ({
     }
   };
 
+  console.log(currentTitle);
+
   return (
     <header className="topbar">
       <div className="brand">
@@ -131,7 +133,15 @@ const Topbar = ({
         </div>
         <div className="brand-title">
           <div className="title">
-            {currentTitle ? (video?.name ?? <Skeleton height={16} />) : "VOD Review Session"}
+            {video?.name ? (
+              video.name !== "Untitled" ? (
+                currentTitle
+              ) : (
+                <Skeleton height={16} />
+              )
+            ) : (
+              "VOD Review Session"
+            )}
           </div>
           <div className="subtitle">Competitive Analysis</div>
         </div>
