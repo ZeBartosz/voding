@@ -250,17 +250,18 @@ const Notes: React.FC<NotesProps> = ({
                       </button>
                     )}
 
-                    <button
-                      onClick={() => {
-                        deleteNote(n.id);
-                      }}
-                      aria-label="Delete note"
-                      className="btn has-tooltip"
-                      disabled={readOnly}
-                      data-tooltip="Delete"
-                    >
-                      <Trash size={16} className="text-red-600" />
-                    </button>
+                    {!readOnly && (
+                      <button
+                        onClick={() => {
+                          deleteNote(n.id);
+                        }}
+                        aria-label="Delete note"
+                        className="btn has-tooltip"
+                        data-tooltip="Delete"
+                      >
+                        <Trash size={16} className="text-red-600" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -309,17 +310,19 @@ const Notes: React.FC<NotesProps> = ({
       </div>
 
       <div className="input-box">
-        <textarea
-          ref={textareaRef}
-          value={inputValue}
-          readOnly={readOnly}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-          }}
-          placeholder={readOnly ? "Read-only session" : "Write your observation..."}
-          onKeyDown={handleKeyDown}
-          className="input-textarea"
-        />
+        <div className="textarea-wrapper">
+          <textarea
+            ref={textareaRef}
+            value={inputValue}
+            readOnly={readOnly}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+            }}
+            placeholder={readOnly ? "Read-only session" : "Write your observation..."}
+            onKeyDown={handleKeyDown}
+            className={`input-textarea ${readOnly ? "input-textarea-readonly" : ""}`}
+          />
+        </div>
         <div className="button-box">
           <div>
             <button
@@ -339,7 +342,7 @@ const Notes: React.FC<NotesProps> = ({
             }}
             className="btn btn-primary"
             disabled={readOnly}
-            title={readOnly ? "Adding notes is disabled in read-only view" : undefined}
+            title={readOnly ? "Save this VOD to your session to add notes" : undefined}
           >
             {readOnly ? "Read-only" : "+ Add Note"}
           </button>

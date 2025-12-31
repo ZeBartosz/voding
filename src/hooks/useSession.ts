@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import type { VoddingPayload } from "../types";
-import { deleteVod, getVoddingById, getVoddingList, saveVod } from "../repository/VoddingDb";
+import {
+  deleteVod,
+  getByVideoId,
+  getVoddingById,
+  getVoddingList,
+  saveVod,
+} from "../repository/VoddingDb";
 
 export const useSession = (setCurrentTitle: (title: string | null) => void) => {
   const [voddingList, setVoddingList] = useState<VoddingPayload[]>([]);
@@ -37,6 +43,24 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
 
     try {
       const data = await getVoddingById(id);
+      setVodding(data ?? null);
+      return data;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      setVodding(null);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadWithVideoId = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getByVideoId(id);
       setVodding(data ?? null);
       return data;
     } catch (err: unknown) {
@@ -98,9 +122,11 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
 
   return {
     vodding,
+    setVodding,
     loading,
     loadAll,
     loadWithId,
+    loadWithVideoId,
     voddingList,
     deleteVodById,
     error,

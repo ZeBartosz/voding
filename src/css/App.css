@@ -277,6 +277,19 @@ body,
   }
 }
 
+.topbar-btn-success {
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  box-shadow: 0 4px 12px rgb(34 197 94 / 25%);
+}
+
+.topbar-btn-success:hover {
+  box-shadow: 0 6px 20px rgb(34 197 94 / 35%);
+  transform: translateY(-2px);
+}
+
 /* Note count badge/pill with gradient background */
 .notes-pill {
   z-index: 20;

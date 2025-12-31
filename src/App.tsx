@@ -8,14 +8,16 @@ import { useVideoMetaData } from "./hooks/useVideoMetaData";
 import useExportPdf from "./hooks/useExportPdf";
 import { useNotes } from "./hooks/useNotes";
 import useNotesAutosave from "./hooks/useNotesAutosave";
+import { useUrlSync } from "./hooks/useUrlSync";
 import Topbar from "./components/Topbar";
 import NotesSkeleton from "./components/ui/NotesSkeleton";
 import Skeleton from "./components/ui/skeleton";
+import { v4 as uuidv4 } from "uuid";
 const VideoPlayer = lazy(() => import("./components/VideoPlayer"));
 const ResultBox = lazy(() => import("./components/Notes"));
 
 function App() {
-  const [isFromTimestampUrl, setIsFromTimestampUrl] = useState<boolean>(false);
+  const [sharedFromUrl, setSharedFromUrl] = useState<boolean>(false);
   const { handleProgress, currentTimeRef, currentTitle, handleTitleChange, setCurrentTitle } =
     useVideoMetaData();
   const {
@@ -30,18 +32,84 @@ function App() {
     handleResetFocusAndScale,
     handleNoteJump,
     handleHash,
-  } = useLink(currentTitle, setIsFromTimestampUrl);
-  const { save, voddingList, deleteVodById, loadWithId, loading, loadAll, vodding } =
+    urlNotes,
+    clearUrlNotes,
+  } = useLink(currentTitle, setSharedFromUrl);
+  const { save, voddingList, deleteVodById, loadWithId, loading, loadAll, vodding, setVodding } =
     useSession(setCurrentTitle);
-
-  const { notes, setNotes } = useNotes(currentTimeRef, vodding?.notes);
+  const initialNotesSource = sharedFromUrl && urlNotes.length > 0 ? urlNotes : vodding?.notes;
+  const { notes, setNotes } = useNotes(currentTimeRef, initialNotesSource);
   const { lastSavedAt, onRestoring, prevNotesRef } = useNotesAutosave({
     notes,
     vodding,
     video,
     save,
-    isFromTimestampUrl,
+    sharedFromUrl,
   });
+  const { copyShareableUrl } = useUrlSync({
+    video,
+    notes,
+    sharedFromUrl,
+  });
+  const [saving, setSaving] = useState<boolean>(false);
+
+  const handleSaveShared = useCallback(async (): Promise<boolean> => {
+    try {
+      if (saving) return false;
+      if (!sharedFromUrl) return false;
+      setSaving(true);
+
+      const currentVideo = video ?? vodding?.video;
+      if (!currentVideo) return false;
+
+      const now = new Date().toISOString();
+
+      let payload;
+      if (vodding) {
+        payload = {
+          ...vodding,
+          video: currentVideo,
+          notes: urlNotes,
+          updatedAt: now,
+        };
+      } else {
+        payload = {
+          id: uuidv4(),
+          createdAt: now,
+          updatedAt: now,
+          video: currentVideo,
+          notes: urlNotes,
+        };
+      }
+
+      const savedPayload = await save(payload);
+
+      if (savedPayload.id) {
+        setNotes(payload.notes);
+        setVideo(payload.video);
+        setSharedFromUrl(false);
+        clearUrlNotes();
+        return true;
+      }
+
+      return false;
+    } catch {
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [
+    urlNotes,
+    video,
+    vodding,
+    save,
+    setNotes,
+    setVideo,
+    clearUrlNotes,
+    setSharedFromUrl,
+    saving,
+    sharedFromUrl,
+  ]);
 
   const exportOptions = useMemo(
     () => ({
@@ -67,15 +135,18 @@ function App() {
     (() => {
       setNotes([]);
       setVideo(null);
+      setVodding(null);
       handleSetInputValue("");
       if (prevNotesRef.current) prevNotesRef.current = [];
-      setIsFromTimestampUrl(false);
+      setSharedFromUrl(false);
+      clearUrlNotes();
 
       const cleanUrlParams = () => {
         const { origin, pathname, search, hash } = window.location;
         const searchParams = new URLSearchParams(search.startsWith("?") ? search.slice(1) : "");
         searchParams.delete("v");
         searchParams.delete("t");
+        searchParams.delete("n");
         const newSearch = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
         let newHash = "";
@@ -85,6 +156,7 @@ function App() {
             const hashParams = new URLSearchParams(hashRaw);
             hashParams.delete("v");
             hashParams.delete("t");
+            hashParams.delete("n");
             const hashStr = hashParams.toString();
             if (hashStr) {
               newHash = `#${hashStr}`;
@@ -118,7 +190,7 @@ function App() {
         //
       }
     })();
-  }, [handleSetInputValue, loadAll, setVideo, setNotes, prevNotesRef]);
+  }, [handleSetInputValue, loadAll, setVideo, setNotes, prevNotesRef, clearUrlNotes, setVodding]);
 
   return (
     <div className="container">
@@ -129,6 +201,8 @@ function App() {
         handleExport={handleExport}
         handleNewSession={handleNewSession}
         currentTitle={currentTitle}
+        onCopyShareableUrl={copyShareableUrl}
+        onSaveShared={sharedFromUrl ? handleSaveShared : undefined}
       />
 
       <div className="main">
@@ -159,7 +233,7 @@ function App() {
               <div className="header-left">
                 <div className="h1">Session Notes</div>
                 <div className="small">
-                  {isFromTimestampUrl
+                  {sharedFromUrl
                     ? "Read-only session — notes are disabled"
                     : "Add your observations"}
                 </div>
@@ -168,22 +242,6 @@ function App() {
             </div>
 
             <div className="input-container">
-              {isFromTimestampUrl && (
-                <div
-                  className="readonly-overlay"
-                  role="status"
-                  aria-live="polite"
-                  title="Read-only session"
-                >
-                  <div>
-                    <div className="readonly-title">Read-only session</div>
-                    <div className="readonly-desc">
-                      This session was opened from a timestamped link — notes are read-only. You
-                      cannot add or edit notes in this view.
-                    </div>
-                  </div>
-                </div>
-              )}
               <Suspense fallback={<NotesSkeleton />}>
                 <ResultBox
                   currentTime={currentTimeRef}
@@ -192,7 +250,7 @@ function App() {
                   handleResetFocusAndScale={handleResetFocusAndScale}
                   initialNotes={notes}
                   onNotesChange={setNotes}
-                  readOnly={isFromTimestampUrl}
+                  readOnly={sharedFromUrl}
                 />
               </Suspense>
             </div>

@@ -36,6 +36,12 @@ export const getVoddingById = async (id: string): Promise<VoddingPayload | null>
   return vodding ?? null;
 };
 
+export const getByVideoId = async (id: string): Promise<VoddingPayload | null> => {
+  const db = await getDB();
+  const vodding = await db.getFromIndex("vodding", "by-videoId", id);
+  return vodding ?? null;
+};
+
 export const saveVod = async (data: VoddingPayload): Promise<VoddingPayload> => {
   const db = await getDB();
   const videoId = data.video.id;
