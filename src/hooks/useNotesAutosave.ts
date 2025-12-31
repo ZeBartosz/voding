@@ -114,7 +114,6 @@ export default function useNotesAutosave({
         void doSave();
       }, 0) as unknown as number;
       prevNotesRef.current = notes;
-      console.log("doSave");
       return;
     }
 
@@ -130,7 +129,6 @@ export default function useNotesAutosave({
     const wasShared = prevSharedFromUrlRef.current;
     prevSharedFromUrlRef.current = sharedFromUrl;
 
-    // fire once when we leave "shared" mode
     if (
       wasShared &&
       !sharedFromUrl &&
@@ -147,8 +145,6 @@ export default function useNotesAutosave({
         void doSave();
       }, 0) as unknown as number;
 
-      // keep refs in sync so your "change detection" doesn't think
-      // something changed just because we switched modes
       prevNotesRef.current = notes;
     }
   }, [sharedFromUrl, skipAutosave, video, vodding, doSave, notes]);
