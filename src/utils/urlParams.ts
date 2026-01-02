@@ -159,3 +159,31 @@ export function removeSharedFromUrl(): void {
     window.history.replaceState(null, "", `${window.location.pathname}${newHash}`);
   }
 }
+
+export const cleanVideoParams = () => {
+  const { origin, pathname, search, hash } = window.location;
+  const searchParams = new URLSearchParams(search.startsWith("?") ? search.slice(1) : "");
+  searchParams.delete("v");
+  searchParams.delete("t");
+  searchParams.delete("n");
+  const newSearch = searchParams.toString() ? `?${searchParams.toString()}` : "";
+
+  let newHash = "";
+  if (hash && hash.length > 1) {
+    const hashRaw = hash.replace(/^#/, "");
+    if (hashRaw.includes("=") || hashRaw.includes("&")) {
+      const hashParams = new URLSearchParams(hashRaw);
+      hashParams.delete("v");
+      hashParams.delete("t");
+      hashParams.delete("n");
+      const hashStr = hashParams.toString();
+      if (hashStr) {
+        newHash = `#${hashStr}`;
+      }
+    } else {
+      newHash = `#${hashRaw}`;
+    }
+  }
+
+  return `${origin}${pathname}${newSearch}${newHash}`;
+};
