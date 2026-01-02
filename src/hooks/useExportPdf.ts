@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Note } from "../types";
 import { jsPDF } from "jspdf";
+import { formatTime } from "../utils/formatTime";
 
 interface UseExportPdfParams {
   title?: string | null;
@@ -8,20 +9,6 @@ interface UseExportPdfParams {
   notes?: Note[] | null;
   filename?: string;
 }
-
-export const formatTime = (seconds: number): string => {
-  if (!Number.isFinite(seconds) || seconds <= 0) return "0:00";
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  const m = String(minutes);
-  const s = String(secs).padStart(2, "0");
-  if (hours > 0) {
-    const hh = String(hours);
-    return hh + ":" + m.padStart(2, "0") + ":" + s;
-  }
-  return m + ":" + s;
-};
 
 // Color palette matching the app theme
 const colors = {
