@@ -1,4 +1,11 @@
-import { lazy, Suspense, useCallback, useMemo, useState, useEffect } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import "./css/App.css";
 import "./css/Notes.css";
 import "./css/VideoPlayer.css";
@@ -20,10 +27,23 @@ const ResultBox = lazy(() => import("./components/Notes"));
 
 function App() {
   const [sharedFromUrl, setSharedFromUrl] = useState<boolean>(false);
-  const { handleProgress, currentTimeRef, currentTitle, handleTitleChange, setCurrentTitle } =
-    useVideoMetaData();
-  const { save, voddingList, deleteVodById, loadWithId, loading, loadAll, vodding, setVodding } =
-    useSession(setCurrentTitle);
+  const {
+    handleProgress,
+    currentTimeRef,
+    currentTitle,
+    handleTitleChange,
+    setCurrentTitle,
+  } = useVideoMetaData();
+  const {
+    save,
+    voddingList,
+    deleteVodById,
+    loadWithId,
+    loading,
+    loadAll,
+    vodding,
+    setVodding,
+  } = useSession(setCurrentTitle);
   const {
     playerRef,
     video,
@@ -39,7 +59,8 @@ function App() {
     urlNotes,
     clearUrlNotes,
   } = useLink(currentTitle, setSharedFromUrl, loadWithId);
-  const initialNotesSource = sharedFromUrl && urlNotes.length > 0 ? urlNotes : vodding?.notes;
+  const initialNotesSource =
+    sharedFromUrl && urlNotes.length > 0 ? urlNotes : vodding?.notes;
   const notes = useNotes(currentTimeRef, initialNotesSource);
   const { lastSavedAt, onRestoring, prevNotesRef } = useNotesAutosave({
     notes: notes.items,
@@ -128,13 +149,10 @@ function App() {
 
   useEffect(() => {
     void handleHash();
-    window.addEventListener("hashchange", () => {
-      void handleHash();
-    });
+    const listener = () => { void handleHash(); };
+    window.addEventListener("hashchange", listener);
     return () => {
-      window.removeEventListener("hashchange", () => {
-        void handleHash();
-      });
+      window.removeEventListener("hashchange", listener);
     };
   }, [handleHash]);
 
@@ -156,7 +174,10 @@ function App() {
 
     try {
       const newUrl = cleanVideoParams();
-      if (typeof window !== "undefined" && typeof window.history.replaceState === "function") {
+      if (
+        typeof window !== "undefined" &&
+        typeof window.history.replaceState === "function"
+      ) {
         window.history.replaceState(null, "", newUrl);
       } else {
         //
