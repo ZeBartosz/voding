@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { VoddingPayload } from "../types";
 import {
   deleteVod,
@@ -10,9 +10,15 @@ import {
 
 export const useSession = (setCurrentTitle: (title: string | null) => void) => {
   const [voddingList, setVoddingList] = useState<VoddingPayload[]>([]);
-  const [vodding, setVodding] = useState<VoddingPayload | null>(null);
+  const [vodding, _setVodding] = useState<VoddingPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const currentVoddingIdRef = useRef<string | null>(null);
+
+  const setVodding = useCallback((value: VoddingPayload | null) => {
+    _setVodding(value);
+    currentVoddingIdRef.current = value?.id ?? null;
+  }, []);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -43,12 +49,20 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
 
     try {
       const data = await getVoddingById(id);
-      setVodding(data ?? null);
+      if (data && currentVoddingIdRef.current === data.id) {
+        setLoading(false);
+        return data;
+      }
+      _setVodding(data ?? null);
+      if (data) {
+        currentVoddingIdRef.current = data.id;
+        window.localStorage.setItem("current_vodding_id", data.id);
+      }
       return data;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
-      setVodding(null);
+      _setVodding(null);
       return null;
     } finally {
       setLoading(false);
@@ -61,12 +75,12 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
 
     try {
       const data = await getByVideoId(id);
-      setVodding(data ?? null);
+      _setVodding(data ?? null);
       return data;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
-      setVodding(null);
+      _setVodding(null);
       return null;
     } finally {
       setLoading(false);
@@ -77,7 +91,7 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
     void loadAll();
 
     return () => {
-      setVodding(null);
+      _setVodding(null);
       setVoddingList([]);
     };
   }, [loadAll]);
@@ -87,7 +101,9 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
     setError(null);
     try {
       const res = await saveVod(payload);
-      setVodding(res);
+      _setVodding(res);
+      currentVoddingIdRef.current = res.id;
+      window.localStorage.setItem("current_vodding_id", res.id);
       return res;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);

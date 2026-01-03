@@ -6,13 +6,14 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { Note, Video } from "../types";
+import type { Note, Video, VoddingPayload } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { parseHashParams } from "../utils/urlParams";
 
 export const useLink = (
   currentTitle: string | null,
   setSharedFromUrl: Dispatch<SetStateAction<boolean>>,
+  loadWithId: (id: string) => Promise<VoddingPayload | null>,
 ) => {
   const [video, setVideo] = useState<Video | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
@@ -164,7 +165,7 @@ export const useLink = (
     [validateAndCleanUrl, currentTitle, video],
   );
 
-  const handleHash = useCallback(() => {
+  const handleHash = useCallback(async () => {
     try {
       const { videoUrl, notes, shared } = parseHashParams();
 
@@ -175,6 +176,21 @@ export const useLink = (
 
       // Set read-only mode if we have notes or timestamp from URL
       setSharedFromUrl(shared);
+
+      if (!shared) {
+        const id = localStorage.getItem("current_vodding_id");
+        if (id) {
+          const data = await loadWithId(id);
+          if (data) {
+            const currentUrl = video?.url ?? null;
+            if (currentUrl !== data.video.url) {
+              setVideo(data.video);
+              setUrlNotes(data.notes);
+            }
+            return;
+          }
+        }
+      }
 
       // Store notes from URL
       if (hasUrlNotes) {
@@ -197,7 +213,7 @@ export const useLink = (
     } catch {
       //
     }
-  }, [loadVideoFromUrl, handleNoteJump, setSharedFromUrl]);
+  }, [loadVideoFromUrl, handleNoteJump, setSharedFromUrl, loadWithId, video]);
 
   const clearUrlNotes = useCallback(() => {
     setUrlNotes([]);

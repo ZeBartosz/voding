@@ -22,6 +22,8 @@ function App() {
   const [sharedFromUrl, setSharedFromUrl] = useState<boolean>(false);
   const { handleProgress, currentTimeRef, currentTitle, handleTitleChange, setCurrentTitle } =
     useVideoMetaData();
+  const { save, voddingList, deleteVodById, loadWithId, loading, loadAll, vodding, setVodding } =
+    useSession(setCurrentTitle);
   const {
     playerRef,
     video,
@@ -36,9 +38,7 @@ function App() {
     handleHash,
     urlNotes,
     clearUrlNotes,
-  } = useLink(currentTitle, setSharedFromUrl);
-  const { save, voddingList, deleteVodById, loadWithId, loading, loadAll, vodding, setVodding } =
-    useSession(setCurrentTitle);
+  } = useLink(currentTitle, setSharedFromUrl, loadWithId);
   const initialNotesSource = sharedFromUrl && urlNotes.length > 0 ? urlNotes : vodding?.notes;
   const notes = useNotes(currentTimeRef, initialNotesSource);
   const { lastSavedAt, onRestoring, prevNotesRef } = useNotesAutosave({
@@ -127,12 +127,22 @@ function App() {
   const { exporting, handleExport } = useExportPdf(exportOptions);
 
   useEffect(() => {
-    handleHash();
-    window.addEventListener("hashchange", handleHash);
+    void handleHash();
+    window.addEventListener("hashchange", () => {
+      void handleHash;
+    });
     return () => {
-      window.removeEventListener("hashchange", handleHash);
+      window.removeEventListener("hashchange", () => {
+        void handleHash;
+      });
     };
   }, [handleHash]);
+
+  useEffect(() => {
+    return () => {
+      window.localStorage.removeItem("current_vodding_id");
+    };
+  }, []);
 
   const handleNewSession = useCallback(() => {
     notes.setNotes([]);
@@ -142,6 +152,7 @@ function App() {
     if (prevNotesRef.current) prevNotesRef.current = [];
     setSharedFromUrl(false);
     clearUrlNotes();
+    window.localStorage.removeItem("current_vodding_id");
 
     try {
       const newUrl = cleanVideoParams();
