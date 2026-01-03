@@ -13,6 +13,7 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!initialNotes) return;
@@ -20,6 +21,22 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
       setNotes(initialNotes);
     });
   }, [initialNotes]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollRef.current) cancelAnimationFrame(scrollRef.current);
+    };
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    if (scrollRef.current) cancelAnimationFrame(scrollRef.current);
+
+    scrollRef.current = requestAnimationFrame(() => {
+      const el = resultsRef.current;
+      if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      scrollRef.current = null;
+    });
+  }, []);
 
   const filtered = useMemo(() => {
     if (!query) return notes;
@@ -48,11 +65,8 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
     });
 
     setInputValue("");
-    requestAnimationFrame(() => {
-      const el = resultsRef.current;
-      if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    });
-  }, [inputValue, currentTimeRef]);
+    scrollToBottom();
+  }, [inputValue, currentTimeRef, scrollToBottom]);
 
   const deleteNote = useCallback((id: string) => {
     setNotes((prev) => prev.filter((n) => n.id !== id));
