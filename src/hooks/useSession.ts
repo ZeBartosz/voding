@@ -14,10 +14,12 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const currentVoddingIdRef = useRef<string | null>(null);
+  const currentUpdatedAtRef = useRef<string | null>(null);
 
   const setVodding = useCallback((value: VoddingPayload | null) => {
     _setVodding(value);
     currentVoddingIdRef.current = value?.id ?? null;
+    currentUpdatedAtRef.current = value?.updatedAt ?? null;
   }, []);
 
   const loadAll = useCallback(async () => {
@@ -49,16 +51,20 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
 
     try {
       const data = await getVoddingById(id);
-      if (data && currentVoddingIdRef.current === data.id) {
-        setLoading(false);
+      if (
+        data &&
+        currentVoddingIdRef.current === data.id &&
+        currentUpdatedAtRef.current === data.updatedAt
+      ) {
         return data;
       }
       _setVodding(data ?? null);
       if (data) {
         currentVoddingIdRef.current = data.id;
+        currentUpdatedAtRef.current = data.updatedAt;
         window.localStorage.setItem("current_vodding_id", data.id);
       }
-      return data;
+      return data
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
@@ -103,6 +109,7 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
       const res = await saveVod(payload);
       _setVodding(res);
       currentVoddingIdRef.current = res.id;
+      currentUpdatedAtRef.current = res.updatedAt;
       window.localStorage.setItem("current_vodding_id", res.id);
       return res;
     } catch (err: unknown) {
