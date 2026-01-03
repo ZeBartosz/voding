@@ -162,7 +162,6 @@ export const cleanVideoParams = () => {
   const { origin, pathname, search, hash } = window.location;
   const searchParams = new URLSearchParams(search.startsWith("?") ? search.slice(1) : "");
   searchParams.delete("v");
-  searchParams.delete("t");
   searchParams.delete("n");
   searchParams.delete("s");
   const newSearch = searchParams.toString() ? `?${searchParams.toString()}` : "";
@@ -173,7 +172,6 @@ export const cleanVideoParams = () => {
     if (hashRaw.includes("=") || hashRaw.includes("&")) {
       const hashParams = new URLSearchParams(hashRaw);
       hashParams.delete("v");
-      hashParams.delete("t");
       hashParams.delete("n");
       hashParams.delete("s");
       const hashStr = hashParams.toString();
