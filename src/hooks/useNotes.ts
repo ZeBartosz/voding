@@ -22,12 +22,6 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
     });
   }, [initialNotes]);
 
-  useEffect(() => {
-    return () => {
-      if (scrollRef.current) cancelAnimationFrame(scrollRef.current);
-    };
-  }, []);
-
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) cancelAnimationFrame(scrollRef.current);
 
@@ -37,6 +31,13 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
       scrollRef.current = null;
     });
   }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+    return () => {
+      if (scrollRef.current) cancelAnimationFrame(scrollRef.current);
+    };
+  }, [notes.length, scrollToBottom]);
 
   const filtered = useMemo(() => {
     if (!query) return notes;
@@ -110,13 +111,6 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
     },
     [inputValue, addNote],
   );
-
-  useEffect(() => {
-    const el = resultsRef.current;
-    if (!el) return;
-
-    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-  }, [notes.length]);
 
   return {
     items: notes,
