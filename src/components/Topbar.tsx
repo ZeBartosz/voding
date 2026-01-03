@@ -9,7 +9,6 @@ interface TopbarProps {
   exporting: boolean;
   handleExport: () => void;
   handleNewSession: () => void;
-  currentTitle: string | null;
   onCopyShareableUrl?: () => Promise<boolean>;
   onSaveShared?: () => Promise<boolean>;
 }
@@ -20,16 +19,11 @@ const Topbar = ({
   exporting,
   handleExport,
   handleNewSession,
-  currentTitle,
   onCopyShareableUrl,
   onSaveShared,
 }: TopbarProps) => {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">(
-    "idle",
-  );
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">(
-    "idle",
-  );
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
 
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

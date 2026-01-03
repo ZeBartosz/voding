@@ -174,7 +174,6 @@ export default function useExportPdf({
       for (let i = 0; i < sortedNotes.length; i++) {
         const n = sortedNotes[i];
         const timeLabel = formatTime(n.timestamp);
-        const ts = Math.floor(n.timestamp);
         const content = (n.content || "").trim();
 
         // Calculate content height
