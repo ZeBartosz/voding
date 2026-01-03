@@ -70,7 +70,7 @@ export function useUrlSync({
     updateTimeoutRef.current = window.setTimeout(() => {
       syncToUrl();
       updateTimeoutRef.current = null;
-    }, debounceMs) as unknown as number;
+    }, debounceMs);
 
     return () => {
       if (updateTimeoutRef.current) {

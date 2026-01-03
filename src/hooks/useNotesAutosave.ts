@@ -112,7 +112,7 @@ export default function useNotesAutosave({
     if (deleted || edited || added) {
       autosaveTimer.current = window.setTimeout(() => {
         void doSave();
-      }, 0) as unknown as number;
+      }, 0);
       prevNotesRef.current = notes;
       return;
     }
@@ -143,7 +143,7 @@ export default function useNotesAutosave({
 
       autosaveTimer.current = window.setTimeout(() => {
         void doSave();
-      }, 0) as unknown as number;
+      }, 0);
 
       prevNotesRef.current = notes;
     }
@@ -176,7 +176,7 @@ export default function useNotesAutosave({
       restoreClearTimer.current = window.setTimeout(() => {
         isRestoringRef.current = false;
         restoreClearTimer.current = null;
-      }, 350) as unknown as number;
+      }, 350);
     }
   }, []);
 

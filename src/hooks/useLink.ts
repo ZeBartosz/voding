@@ -30,7 +30,6 @@ export const useLink = (
     const el: HTMLElement = internal.nodeName ? internal : internal;
 
     el.style.transformOrigin = `${(focus.x * 100).toFixed()}% ${(focus.y * 100).toFixed()}%`;
-
     el.style.transform = `scale(${scale.toString()})`;
     el.style.willChange = "transform";
     el.style.transition = "transform 250ms ease";
