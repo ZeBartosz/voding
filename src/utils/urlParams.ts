@@ -175,7 +175,7 @@ export const cleanVideoParams = () => {
       hashParams.delete("v");
       hashParams.delete("t");
       hashParams.delete("n");
-      searchParams.delete("s");
+      hashParams.delete("s");
       const hashStr = hashParams.toString();
       if (hashStr) {
         newHash = `#${hashStr}`;
