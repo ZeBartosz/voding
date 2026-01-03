@@ -63,12 +63,18 @@ export const useSession = (setCurrentTitle: (title: string | null) => void) => {
         currentVoddingIdRef.current = data.id;
         currentUpdatedAtRef.current = data.updatedAt;
         window.localStorage.setItem("current_vodding_id", data.id);
+      } else {
+        currentVoddingIdRef.current = null;
+        currentUpdatedAtRef.current = null;
+        window.localStorage.removeItem("current_vodding_id");
       }
-      return data
+      return data;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
       _setVodding(null);
+      currentVoddingIdRef.current = null;
+      window.localStorage.removeItem("current_vodding_id");
       return null;
     } finally {
       setLoading(false);
