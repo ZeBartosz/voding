@@ -10,6 +10,7 @@ This repository provides a starter application with development tooling, linting
 - Features
 - Tech stack
 - Getting started
+- Environment Variables
 - Development
 - Contributing
 - Code style & tests
@@ -85,6 +86,74 @@ Notes:
 - If you prefer, `npm` or `yarn` also work. For example: `npm install` / `npm run dev` or `yarn` / `yarn dev`.
 - This project uses the standard Vite script names by default. If your `package.json` differs, use the scripts defined there.
 - Bun provides an integrated runtime and package manager. If you choose Bun, ensure you're running a Bun-supported Node API surface (most Vite workflows work fine with Bun; check Bun docs if you hit runtime differences).
+
+---
+
+## Environment Variables
+
+This project uses environment variables for the Canny feedback board integration. These must be set in your Vite environment (e.g., `.env` file or CI secrets) for the FeedbackBoard component to work.
+
+### Required Variables
+
+The following environment variables are required:
+
+- `VITE_CANNY_FEATURES_TOKEN` - Token for the Feature Requests board
+- `VITE_CANNY_BUGS_TOKEN` - Token for the Bug Reports board
+- `VITE_CANNY_GENERAL_TOKEN` - Token for the General Feedback board
+
+### How to Obtain Canny Board Tokens
+
+1. Log in to your [Canny dashboard](https://app.canny.io/)
+2. Navigate to the board you want to use (or create a new board)
+3. Go to **Settings** → **Integrations** → **SDK**
+4. Copy the **Board Token** (this is what you need for the environment variable)
+5. Repeat for each board you want to integrate (features, bugs, general)
+
+### Setting Up Environment Variables
+
+1. Copy the example environment file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Open `.env` and replace the placeholder values with your actual Canny board tokens:
+
+   ```env
+   VITE_CANNY_FEATURES_TOKEN=your-actual-feature-board-token
+   VITE_CANNY_BUGS_TOKEN=your-actual-bug-board-token
+   VITE_CANNY_GENERAL_TOKEN=your-actual-general-board-token
+   ```
+
+3. Restart your dev server for the changes to take effect.
+
+### Security Warning
+
+**DO NOT** commit actual tokens to version control. The `.env` file is included in `.gitignore` to prevent this. Only `.env.example` (with placeholders) should be committed.
+
+### Usage in Code
+
+These environment variables are used in `src/components/FeedbackBoard.tsx` in the `BOARDS` constant (lines 17-33):
+
+```typescript
+const BOARDS = {
+  features: {
+    token: import.meta.env.VITE_CANNY_FEATURES_TOKEN,
+    name: "Feature Requests",
+    description: "Suggest and vote on new features",
+  },
+  bugs: {
+    token: import.meta.env.VITE_CANNY_BUGS_TOKEN,
+    name: "Bug Reports",
+    description: "Report issues and track fixes",
+  },
+  general: {
+    token: import.meta.env.VITE_CANNY_GENERAL_TOKEN,
+    name: "General Feedback",
+    description: "Share your thoughts and ideas",
+  },
+};
+```
 
 ---
 
