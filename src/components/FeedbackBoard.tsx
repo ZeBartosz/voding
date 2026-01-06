@@ -1,14 +1,18 @@
-// src/components/FeedbackBoard.tsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+type CannyCommand = (string | object)[];
+
+type CannySDK = ((...args: CannyCommand) => void) & {
+  q?: CannyCommand[];
+};
+
 declare global {
   interface Window {
-    Canny: any;
+    Canny?: CannySDK;
   }
 }
 
-// Configuration for all your boards
 const BOARDS = {
   features: {
     token: import.meta.env.VITE_CANNY_FEATURES_TOKEN,
@@ -40,50 +44,43 @@ export function FeedbackBoard() {
       return;
     }
 
-    // Initialize Canny queue
-    if (!window.Canny) {
-      window.Canny = function (...args: any[]) {
-        (window.Canny.q = window.Canny.q || []).push(args);
+    window.Canny =
+      window.Canny ??
+      function (...args: CannyCommand) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        (window.Canny!.q = window.Canny!.q ?? []).push(args);
       };
-    }
 
     const renderBoard = () => {
-      // Clear previous board content
       const boardElement = document.querySelector("[data-canny]");
       if (boardElement) {
         boardElement.innerHTML = "";
       }
 
-      // Render the new board
-      window.Canny("render", {
+      window.Canny?.("render", {
         boardToken: currentBoard.token,
         basePath: `/feedback/${activeBoard}`,
         theme: "dark",
-        hide: ["header"],
       });
     };
 
-    // Load SDK if not already loaded
     if (!document.querySelector('script[src="https://canny.io/sdk.js"]')) {
       const script = document.createElement("script");
       script.src = "https://canny.io/sdk.js";
       script.async = true;
       script.onload = renderBoard;
-      script.onerror = () => console.error("Failed to load Canny SDK");
       document.head.appendChild(script);
     } else {
-      // SDK already loaded, render immediately
       renderBoard();
     }
 
     return () => {
-      // Cleanup on unmount or board switch
       const boardElement = document.querySelector("[data-canny]");
       if (boardElement) {
         boardElement.innerHTML = "";
       }
     };
-  }, [activeBoard]); // Re-run when active board changes
+  }, [activeBoard]);
 
   return (
     <div className="container">
@@ -105,7 +102,9 @@ export function FeedbackBoard() {
                 {Object.entries(BOARDS).map(([key, board]) => (
                   <button
                     key={key}
-                    onClick={() => setActiveBoard(key as BoardKey)}
+                    onClick={() => {
+                      setActiveBoard(key as BoardKey);
+                    }}
                     className={`tab-button ${activeBoard === key ? "active" : ""}`}
                     aria-pressed={activeBoard === key}
                   >
@@ -118,7 +117,7 @@ export function FeedbackBoard() {
                 {BOARDS[activeBoard].description}
               </p>
 
-              <div data-canny />
+              <div data-canny key={activeBoard} />
             </div>
           </aside>
         </div>
