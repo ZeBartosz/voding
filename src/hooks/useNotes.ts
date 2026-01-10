@@ -3,6 +3,7 @@ import type { RefObject } from "react";
 import type { Note } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { formatTime } from "../utils/formatTime";
+import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
 
 export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note[]) => {
   const [notes, setNotes] = useState<Note[]>(initialNotes ?? []);
@@ -131,22 +132,26 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
     [inputValue, addNote],
   );
 
-  const handleKeyPress = useCallback(
-    (e: KeyboardEvent) => {
-      if (!currentTimeRef) return;
-      if (e.altKey && e.key === "a") addNote("Edit");
-      if (e.altKey && e.key === "l") editLatestNote();
-      if (e.ctrlKey && e.altKey && e.key === "d") deleteLatesedNotes();
+  useKeyboardShortcuts(
+    {
+      "alt+a": (e) => {
+        if (!currentTimeRef) return;
+        e.preventDefault();
+        addNote("Edit");
+      },
+      "alt+l": (e) => {
+        if (!currentTimeRef) return;
+        e.preventDefault();
+        editLatestNote();
+      },
+      "ctrl+alt+d": (e) => {
+        if (!currentTimeRef) return;
+        e.preventDefault();
+        deleteLatesedNotes();
+      },
     },
     [currentTimeRef, addNote, editLatestNote, deleteLatesedNotes],
   );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyPress);
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [handleKeyPress]);
 
   return {
     items: notes,

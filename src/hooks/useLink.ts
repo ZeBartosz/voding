@@ -9,6 +9,7 @@ import {
 import type { Note, Video, VoddingPayload } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { parseHashParams } from "../utils/urlParams";
+import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
 
 export const useLink = (
   currentTitle: string | null,
@@ -119,23 +120,17 @@ export const useLink = (
     setFocus({ x: 0.02, y: 0.05 });
   }, []);
 
-  const handleKeyPress = useCallback(
-    (e: KeyboardEvent) => {
-      if (!video) return;
-      if (e.altKey && e.key === "m") {
+  useKeyboardShortcuts(
+    {
+      "alt+m": (e) => {
+        if (!video) return;
+        e.preventDefault();
         if (mapViewRef.current) handleResetFocusAndScale();
         else handleMapView();
-      }
+      },
     },
     [video, handleResetFocusAndScale, handleMapView],
   );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyPress);
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [handleKeyPress]);
 
   const handleNoteJump = useCallback((time: number) => {
     const el = playerRef.current;

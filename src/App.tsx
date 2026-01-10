@@ -15,6 +15,7 @@ import Skeleton from "./components/ui/skeleton";
 import { v4 as uuidv4 } from "uuid";
 import { cleanVideoParams } from "./utils/urlParams";
 import { InputArea } from "./components/notes/InputTextarea";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 const VideoPlayer = lazy(() => import("./components/VideoPlayer"));
 const ResultBox = lazy(() => import("./components/Notes"));
 
@@ -179,6 +180,20 @@ function App() {
     clearUrlNotes,
     setVodding,
   ]);
+
+  useKeyboardShortcuts(
+    {
+      "alt+n": (e) => {
+        e.preventDefault();
+        handleNewSession();
+      },
+      "alt+e": (e) => {
+        e.preventDefault();
+        handleExport();
+      },
+    },
+    [handleNewSession, handleSaveShared, handleExport],
+  );
 
   return (
     <div className="container">
