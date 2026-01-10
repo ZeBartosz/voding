@@ -2,6 +2,7 @@ import { Clock, Edit, Send, Trash } from "lucide-react";
 import type { Note } from "../../types";
 import { formatTime } from "../../utils/formatTime";
 import { memo } from "react";
+import { EditTextarea } from "./InputTextarea";
 
 interface NoteCardProps {
   note: Note;
@@ -73,30 +74,13 @@ const NoteCard = ({
 
       <div className="result-content">
         {isEditing ? (
-          <div className="note-edit-wrap">
-            <textarea
-              autoFocus
-              className="note-edit-textarea"
-              value={editingValue}
-              readOnly={readOnly}
-              onChange={(e) => {
-                onEditValueChange(e.target.value);
-              }}
-            />
-            <div className="note-edit-actions">
-              <button
-                onClick={onSave}
-                className="btn btn-primary"
-                disabled={readOnly}
-                title={readOnly ? "Disabled in read-only view" : undefined}
-              >
-                Save
-              </button>
-              <button onClick={onCancel} className="btn btn-ghost">
-                Cancel
-              </button>
-            </div>
-          </div>
+          <EditTextarea
+            editingValue={editingValue}
+            onEditValueChange={onEditValueChange}
+            readOnly={readOnly}
+            onSave={onSave}
+            onCancel={onCancel}
+          />
         ) : (
           <div className="note-content">{note.content}</div>
         )}

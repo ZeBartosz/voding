@@ -14,7 +14,7 @@ import NotesSkeleton from "./components/ui/NotesSkeleton";
 import Skeleton from "./components/ui/skeleton";
 import { v4 as uuidv4 } from "uuid";
 import { cleanVideoParams } from "./utils/urlParams";
-import InputArea from "./components/notes/InputTextarea";
+import { InputArea } from "./components/notes/InputTextarea";
 const VideoPlayer = lazy(() => import("./components/VideoPlayer"));
 const ResultBox = lazy(() => import("./components/Notes"));
 
