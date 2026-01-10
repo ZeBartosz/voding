@@ -19,10 +19,12 @@ export const useLink = (
   const [inputValue, setInputValue] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [urlNotes, setUrlNotes] = useState<Note[]>([]);
-  const jumpTimeoutRef = useRef<number | null>(null);
-  const playerRef = useRef<HTMLVideoElement | null>(null);
   const [focus, setFocus] = useState({ x: 0.5, y: 0.5 });
   const [scale, setScale] = useState(1);
+
+  const jumpTimeoutRef = useRef<number | null>(null);
+  const playerRef = useRef<HTMLVideoElement | null>(null);
+  const mapViewRef = useRef<boolean>(false);
 
   useEffect(() => {
     const internal = playerRef.current;
@@ -103,17 +105,37 @@ export const useLink = (
     setInputValue(value);
   }, []);
 
-  const handleResetFocusAndScale = useCallback((e: React.SyntheticEvent) => {
-    e.stopPropagation();
+  const handleResetFocusAndScale = useCallback((e?: React.SyntheticEvent) => {
+    e?.stopPropagation();
+    mapViewRef.current = false;
     setFocus({ x: 0.5, y: 0.5 });
     setScale(1);
   }, []);
 
-  const handleMapView = useCallback((e: React.SyntheticEvent) => {
-    e.stopPropagation();
+  const handleMapView = useCallback((e?: React.SyntheticEvent) => {
+    e?.stopPropagation();
+    mapViewRef.current = true;
     setScale(2.7);
     setFocus({ x: 0.02, y: 0.05 });
   }, []);
+
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (!video) return;
+      if (e.altKey && e.key === "m") {
+        if (mapViewRef.current) handleResetFocusAndScale();
+        else handleMapView();
+      }
+    },
+    [video, handleResetFocusAndScale, handleMapView],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   const handleNoteJump = useCallback((time: number) => {
     const el = playerRef.current;

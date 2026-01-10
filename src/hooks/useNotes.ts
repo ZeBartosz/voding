@@ -47,30 +47,38 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
     );
   }, [notes, query]);
 
-  const addNote = useCallback(() => {
-    if (!inputValue.trim()) return;
+  const addNote = useCallback(
+    (value?: string) => {
+      const content = value ?? inputValue;
+      if (!content.trim()) return;
 
-    const timestamp = typeof currentTimeRef?.current === "number" ? currentTimeRef.current : 0;
+      const timestamp = typeof currentTimeRef?.current === "number" ? currentTimeRef.current : 0;
 
-    const newNote: Note = {
-      id: uuidv4(),
-      content: inputValue,
-      timestamp,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      const newNote: Note = {
+        id: uuidv4(),
+        content,
+        timestamp,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    setNotes((prev: Note[]) => {
-      const next = [...prev, newNote];
-      return next;
-    });
+      setNotes((prev: Note[]) => {
+        const next = [...prev, newNote];
+        return next;
+      });
 
-    setInputValue("");
-    scrollToBottom();
-  }, [inputValue, currentTimeRef, scrollToBottom]);
+      setInputValue("");
+      scrollToBottom();
+    },
+    [inputValue, currentTimeRef, scrollToBottom],
+  );
 
   const deleteNote = useCallback((id: string) => {
     setNotes((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
+  const deleteLatesedNotes = useCallback(() => {
+    setNotes((prev) => prev.slice(0, -1));
   }, []);
 
   const editNote = useCallback((id: string, newContent: string) => {
@@ -83,6 +91,17 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
     setEditingId(null);
     setEditingValue("");
   }, []);
+
+  const editLatestNote = useCallback(() => {
+    const latestId = notes.reduce((prev, curr) => {
+      if (prev.createdAt > curr.createdAt) return prev;
+      return curr;
+    });
+
+    if (!latestId.id) return;
+    setEditingId(latestId.id);
+    setEditingValue(latestId.content);
+  }, [notes]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -111,6 +130,23 @@ export const useNotes = (currentTimeRef?: RefObject<number>, initialNotes?: Note
     },
     [inputValue, addNote],
   );
+
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (!currentTimeRef) return;
+      if (e.altKey && e.key === "a") addNote("Edit");
+      if (e.altKey && e.key === "l") editLatestNote();
+      if (e.ctrlKey && e.altKey && e.key === "d") deleteLatesedNotes();
+    },
+    [currentTimeRef, addNote, editLatestNote, deleteLatesedNotes],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   return {
     items: notes,
