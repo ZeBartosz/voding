@@ -36,7 +36,14 @@ const Shortcuts = () => {
     >
       <Keyboard size={16} />
       {showShortcuts && (
-        <div className="shortcuts-panel" role="dialog" aria-label="Keyboard shortcuts">
+        <div
+          className="shortcuts-panel"
+          role="dialog"
+          aria-label="Keyboard shortcuts"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <div className="shortcuts-section">
             <div className="shortcuts-title">Session</div>
             <div className="shortcut-item">
