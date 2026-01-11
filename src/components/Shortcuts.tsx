@@ -87,6 +87,10 @@ const Shortcuts = () => {
               <span>Add note</span>
             </div>
             <div className="shortcut-item">
+              <kbd>Alt</kbd> + <kbd>T</kbd>
+              <span>Focus textarea</span>
+            </div>
+            <div className="shortcut-item">
               <kbd>Alt</kbd> + <kbd>↑/↓</kbd>
               <span>Navigate notes</span>
             </div>
