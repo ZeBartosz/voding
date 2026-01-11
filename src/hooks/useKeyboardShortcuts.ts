@@ -24,6 +24,8 @@ import { useEffect } from "react";
 //   - Alt-m: Toggle map view
 // Shortcut.tsx
 //   - Alt-s: Show keyboard shortcuts
+// InputTextarea.tsx
+//   - Alt+t: Focus on textarea
 
 type ShortcutHandler = (e: KeyboardEvent) => void;
 type ShortcutMap = Record<string, ShortcutHandler>;
@@ -79,11 +81,10 @@ const matchesShortcut = (e: KeyboardEvent, pattern: string): boolean => {
 export const useKeyboardShortcuts = (shortcuts: ShortcutMap) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // TODO: Implement logic to return nothing if textarea or imput is select (test first)
-      // const target = e.target as HTMLElement;
-      // if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
-      //   return;
-      // }
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
       for (const [pattern, handler] of Object.entries(shortcuts)) {
         if (matchesShortcut(e, pattern)) {
           handler(e);

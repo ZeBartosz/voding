@@ -1,4 +1,5 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 
 export const InputArea = memo(
   ({
@@ -20,6 +21,18 @@ export const InputArea = memo(
     handleResetFocusAndScale: (e: React.SyntheticEvent) => void;
     handleMapView: (e: React.SyntheticEvent) => void;
   }) => {
+    const shortcutsBindings = useMemo(
+      () => ({
+        "alt+t": (e: KeyboardEvent) => {
+          e.preventDefault();
+          textareaRef.current?.focus();
+        },
+      }),
+      [textareaRef],
+    );
+
+    useKeyboardShortcuts(shortcutsBindings);
+
     return (
       <div className="input-box">
         <div className="textarea-wrapper">

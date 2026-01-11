@@ -175,7 +175,7 @@ export const useNotes = (
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key !== "Enter") return;
+      if (e.key !== "Enter" && e.key !== "Escape") return;
 
       if (e.shiftKey || e.metaKey) {
         e.preventDefault();
@@ -192,6 +192,15 @@ export const useNotes = (
           const t = textareaRef.current;
           if (t) t.selectionStart = t.selectionEnd = start + 1;
         });
+        return;
+      }
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        const el = textareaRef.current;
+        if (el) {
+          el.blur();
+        }
         return;
       }
 
