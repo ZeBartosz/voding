@@ -84,8 +84,13 @@ export const useNotes = (
   }, []);
 
   const deleteLatestNote = useCallback(() => {
-    setNotes((prev) => prev.slice(0, -1));
-  }, []);
+    if (notes.length === 0) return;
+    const latestNote = notes.reduce((prev, curr) =>
+      prev.createdAt > curr.createdAt ? prev : curr,
+    );
+
+    deleteNote(latestNote.id);
+  }, [notes, deleteNote]);
 
   const editNote = useCallback((id: string, newContent: string) => {
     setNotes((prev) =>
