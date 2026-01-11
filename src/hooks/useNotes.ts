@@ -197,25 +197,25 @@ export const useNotes = (
     [inputValue, addNote],
   );
 
-  useKeyboardShortcuts(
-    {
-      "alt+a": (e) => {
+  const shortcutsBindings = useMemo(
+    () => ({
+      "alt+a": (e: KeyboardEvent) => {
         if (!currentTimeRef) return;
         e.preventDefault();
         addNote("Edit");
       },
-      "alt+l": (e) => {
+      "alt+l": (e: KeyboardEvent) => {
         e.preventDefault();
         if (selectedNoteId) {
           editSelectedNote();
         }
       },
-      "ctrl+alt+l": (e) => {
+      "ctrl+alt+l": (e: KeyboardEvent) => {
         if (!currentTimeRef) return;
         e.preventDefault();
         editLatestNote();
       },
-      "ctrl+alt+d": (e) => {
+      "ctrl+alt+d": (e: KeyboardEvent) => {
         e.preventDefault();
         if (selectedNoteId) {
           deleteSelectedNote();
@@ -223,34 +223,37 @@ export const useNotes = (
           deleteLatesedNotes();
         }
       },
-      "alt+arrowup": (e) => {
+      "alt+arrowup": (e: KeyboardEvent) => {
         e.preventDefault();
         navigateNotes("up");
       },
-      "alt+arrowdown": (e) => {
+      "alt+arrowdown": (e: KeyboardEvent) => {
         e.preventDefault();
         navigateNotes("down");
       },
-      "alt+enter": (e) => {
+      "alt+enter": (e: KeyboardEvent) => {
         e.preventDefault();
         jumpToSelectedNote();
       },
       escape: () => {
         handleEscape();
       },
-    },
+    }),
     [
-      currentTimeRef,
       addNote,
-      editLatestNote,
+      currentTimeRef,
+      selectedNoteId,
       deleteLatesedNotes,
-      navigateNotes,
-      jumpToSelectedNote,
-      handleEscape,
-      editSelectedNote,
       deleteSelectedNote,
+      handleEscape,
+      navigateNotes,
+      editLatestNote,
+      jumpToSelectedNote,
+      editSelectedNote,
     ],
   );
+
+  useKeyboardShortcuts(shortcutsBindings);
 
   return {
     items: notes,

@@ -194,16 +194,16 @@ body,
   margin-bottom: 4px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
   color: rgb(255 255 255 / 40%);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Individual shortcut row */
 .shortcut-item {
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   white-space: nowrap;
 }
 
@@ -214,9 +214,9 @@ kbd {
   justify-content: center;
   min-width: 24px;
   padding: 4px 8px;
+  font-family: inherit;
   font-size: 11px;
   font-weight: 600;
-  font-family: inherit;
   color: rgb(255 255 255 / 70%);
   background: rgb(8 12 14 / 80%);
   border: 1px solid rgb(255 255 255 / 8%);

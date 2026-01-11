@@ -74,7 +74,7 @@ const matchesShortcut = (e: KeyboardEvent, pattern: string): boolean => {
   );
 };
 
-export const useKeyboardShortcuts = (shortcuts: ShortcutMap, deps: unknown[] = []) => {
+export const useKeyboardShortcuts = (shortcuts: ShortcutMap) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       for (const [pattern, handler] of Object.entries(shortcuts)) {
@@ -89,6 +89,5 @@ export const useKeyboardShortcuts = (shortcuts: ShortcutMap, deps: unknown[] = [
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shortcuts, ...deps]);
+  }, [shortcuts]);
 };

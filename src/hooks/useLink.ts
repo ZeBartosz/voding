@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -180,57 +181,59 @@ export const useLink = (
     );
   }, []);
 
-  useKeyboardShortcuts(
-    {
-      "alt+m": (e) => {
+  const shortcutsBindings = useMemo(
+    () => ({
+      "alt+m": (e: KeyboardEvent) => {
         if (!video) return;
         e.preventDefault();
         if (mapViewRef.current) handleResetFocusAndScale();
         else handleMapView();
       },
-      space: (e) => {
+      space: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         togglePlay();
       },
-      k: (e) => {
+      k: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         togglePlay();
       },
-      j: (e) => {
+      j: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         seekBy(-5);
       },
-      l: (e) => {
+      l: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         seekBy(5);
       },
-      arrowleft: (e) => {
+      arrowleft: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         seekBy(-10);
       },
-      arrowright: (e) => {
+      arrowright: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         seekBy(10);
       },
-      arrowup: (e) => {
+      arrowup: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         adjustVolume(0.1);
       },
-      arrowdown: (e) => {
+      arrowdown: (e: KeyboardEvent) => {
         if (!video || isTyping()) return;
         e.preventDefault();
         adjustVolume(-0.1);
       },
-    },
-    [video, handleResetFocusAndScale, handleMapView, togglePlay, seekBy, adjustVolume, isTyping],
+    }),
+    [adjustVolume, handleMapView, handleResetFocusAndScale, isTyping, seekBy, togglePlay, video],
   );
+
+  useKeyboardShortcuts(shortcutsBindings);
 
   const handleUpdateVideoName = useCallback((name: string) => {
     setVideo((prev) => (prev ? { ...prev, name } : prev));
