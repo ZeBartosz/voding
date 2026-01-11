@@ -22,6 +22,8 @@ import { useEffect } from "react";
 //   - ArrowUp: Volume up 10%
 //   - ArrowDown: Volume down 10%
 //   - Alt-m: Toggle map view
+// Shortcut.tsx
+//   - Alt-s: Show keyboard shortcuts
 
 type ShortcutHandler = (e: KeyboardEvent) => void;
 type ShortcutMap = Record<string, ShortcutHandler>;
