@@ -1,23 +1,42 @@
 import { Keyboard } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 const Shortcuts = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
 
+  const shortcutsBindings = useMemo(
+    () => ({
+      "alt+s": (e: KeyboardEvent) => {
+        e.preventDefault();
+        if (showShortcuts) {
+          setShowShortcuts(false);
+        } else {
+          setShowShortcuts(true);
+        }
+      },
+    }),
+    [showShortcuts],
+  );
+
+  useKeyboardShortcuts(shortcutsBindings);
+
   return (
     <div
       className="shortcuts-trigger"
-      onMouseEnter={() => {
-        setShowShortcuts(true);
-      }}
-      onMouseLeave={() => {
-        setShowShortcuts(false);
+      role="button"
+      tabIndex={0}
+      aria-label="Keyboard shortcuts"
+      aria-expanded={showShortcuts}
+      aria-haspopup="dialog"
+      onClick={() => {
+        setShowShortcuts(!showShortcuts);
       }}
       title="Keyboard shortcuts"
     >
       <Keyboard size={16} />
       {showShortcuts && (
-        <div className="shortcuts-panel">
+        <div className="shortcuts-panel" role="dialog" aria-label="Keyboard shortcuts">
           <div className="shortcuts-section">
             <div className="shortcuts-title">Session</div>
             <div className="shortcut-item">
