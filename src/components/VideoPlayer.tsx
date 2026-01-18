@@ -1,35 +1,7 @@
-import React, { type FC, useCallback, useEffect, useRef, useState } from "react";
+import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
-import "media-chrome";
-import {
-  MediaController,
-  MediaControlBar,
-  MediaTimeRange,
-  MediaTimeDisplay,
-  MediaVolumeRange,
-  MediaPlayButton,
-  MediaSeekBackwardButton,
-  MediaSeekForwardButton,
-  MediaMuteButton,
-} from "media-chrome/react";
-import type { Video, VoddingPayload } from "../types";
-
-interface VideoPlayerProps {
-  handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
-  handleTitleChange: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
-  playerRef: React.Ref<HTMLVideoElement>;
-  video: Video | null;
-  handleSubmit: (e: React.FormEvent) => void;
-  inputValue: string;
-  error: string | null;
-  handleSetInputValue: (v: string) => void;
-  voddingList: VoddingPayload[];
-  deleteVodById: (id: string) => Promise<void>;
-  loadWithId: (id: string) => Promise<VoddingPayload | null>;
-  loading: boolean;
-  setVideo: (v: Video | null) => void;
-  onRestoring?: (isRestoring: boolean) => void;
-}
+import type { VoddingPayload } from "../types";
+import type { VideoPlayerProps, MissingURLProps } from "../types/player";
 
 const VideoPlayer: FC<VideoPlayerProps> = ({
   handleProgress,
@@ -94,6 +66,14 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   const handleRetry = useCallback(() => {
     setEmbedError(false);
     setPlayerKey((k) => k + 1);
+  }, []);
+
+  const handlePlayerClick = useCallback(() => {
+    setTimeout(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }, 0);
   }, []);
 
   if (video === null) {
@@ -225,49 +205,31 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   }
 
   return (
-    <div className="video-player-wrap">
-      <MediaController className="media-controller">
-        <ReactPlayer
-          key={playerKey}
-          ref={playerRef}
-          src={video.url}
-          controls={false}
-          slot="media"
-          className="react-player"
-          onLoadedMetadata={handleTitleChange}
-          onTimeUpdate={handleProgress}
-          onError={() => {
-            setEmbedError(true);
-          }}
-        />
-        <MediaControlBar>
-          <MediaPlayButton />
-          <MediaSeekBackwardButton />
-          <MediaSeekForwardButton />
-          <MediaTimeRange />
-          <MediaTimeDisplay showDuration />
-          <MediaMuteButton />
-          <MediaVolumeRange mediaMuted={true} />
-        </MediaControlBar>
-      </MediaController>
+    <div className="video-player-wrap" onClick={handlePlayerClick}>
+      <ReactPlayer
+        key={playerKey}
+        ref={playerRef}
+        src={video.url}
+        controls={true}
+        className="react-player"
+        config={{
+          youtube: {
+            disablekb: 1,
+          },
+        }}
+        onPlay={handlePlayerClick}
+        onPause={handlePlayerClick}
+        onLoadedMetadata={handleTitleChange}
+        onProgress={handleProgress}
+        onError={() => {
+          setEmbedError(true);
+        }}
+      />
     </div>
   );
 };
 
-interface MissingProps {
-  handleSubmit: (e: React.FormEvent) => void;
-  inputValue: string;
-  handleSetInputValue: (value: string) => void;
-  error: string;
-  voddingList: VoddingPayload[];
-  deleteVodById: (id: string) => Promise<void>;
-  loadWithId: (id: string) => Promise<VoddingPayload | null>;
-  loading: boolean;
-  setVideo: (v: Video | null) => void;
-  onRestoring?: (isRestoring: boolean) => void;
-}
-
-const MissingURL: FC<MissingProps> = ({
+const MissingURL: FC<MissingURLProps> = ({
   handleSubmit,
   inputValue,
   handleSetInputValue,

@@ -1,16 +1,17 @@
-/* Media controller container with 16:9 aspect ratio */
-.media-controller {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 16/9;
-}
-
 /* React Player component wrapper */
 .react-player {
   display: block;
   width: 100% !important;
   height: 100% !important;
   background: #000;
+}
+
+.react-player iframe {
+  pointer-events: auto;
+}
+
+.video-player-wrap {
+  position: relative;
 }
 
 /* Video player container with rounded corners */
