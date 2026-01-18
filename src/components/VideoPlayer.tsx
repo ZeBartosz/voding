@@ -71,7 +71,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   const handlePlayerClick = useCallback(() => {
     setTimeout(() => {
       if (document.activeElement instanceof HTMLElement) {
-        console.log(document.activeElement);
         document.activeElement.blur();
       }
     }, 0);

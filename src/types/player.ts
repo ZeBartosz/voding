@@ -11,6 +11,9 @@ export interface YouTubeInternalPlayer {
   playVideo: () => void;
   pauseVideo: () => void;
   getPlayerState: () => number;
+  api: {
+    seekTo: (time: number, units: string) => void;
+  };
 }
 
 export interface ReactPlayerProgress {
@@ -21,9 +24,9 @@ export interface ReactPlayerProgress {
 }
 
 export interface VideoPlayerProps {
-  handleProgress: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
-  handleTitleChange: (e: React.SyntheticEvent<HTMLMediaElement>) => void;
-  playerRef: React.RefObject<ReactPlayerRef | null>;
+  handleProgress: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+  handleTitleChange: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+  playerRef: React.RefObject<HTMLVideoElement | null>;
   video: Video | null;
   handleSubmit: (e: React.FormEvent) => void;
   inputValue: string;
